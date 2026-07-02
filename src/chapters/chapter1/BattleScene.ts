@@ -14,6 +14,7 @@ const BOSS_MAX = 15;
 const BITE_DMG = 3;
 const POLICE_DMG = 1;
 const MAMA_HEAL = 3;
+const MAMA_START = 10;
 const BAR_W = 180;
 
 export class BattleScene extends Phaser.Scene {
@@ -24,6 +25,8 @@ export class BattleScene extends Phaser.Scene {
   private list?: Phaser.GameObjects.Container;
   private healTutorialShown = false;
   private itemsUnlocked = false;
+  private mamaCount = MAMA_START;
+  private mamaCountExplained = false;
   private bossHp = BOSS_MAX;
   private randomHp = RANDOM_MAX;
   private bossHpFill!: Phaser.GameObjects.Rectangle;
@@ -46,6 +49,8 @@ export class BattleScene extends Phaser.Scene {
     this.over = false;
     this.healTutorialShown = false;
     this.itemsUnlocked = false;
+    this.mamaCount = MAMA_START;
+    this.mamaCountExplained = false;
     this.bubble = undefined;
     this.menu = undefined;
     this.list = undefined;
@@ -173,8 +178,16 @@ export class BattleScene extends Phaser.Scene {
   private showItemList(): void {
     this.menu?.destroy();
     this.menu = undefined;
-    this.setBubble("Mama'yı seç!");
-    this.list = this.makeListItem('Mama 🦴', () => this.useMama());
+    this.list = this.makeListItem(`Mama 🦴 ×${this.mamaCount}`, () => this.useMama());
+    if (!this.mamaCountExplained) {
+      this.mamaCountExplained = true;
+      this.setBubble(`Yanındaki sayı kaç adet olduğunu gösterir. ${this.mamaCount} Mama'mız var!`);
+      // sonra seçimi sana bırakır
+      this.time.delayedCall(2800, () => { this.bubble?.destroy(); this.bubble = undefined; });
+    } else {
+      this.bubble?.destroy();
+      this.bubble = undefined;
+    }
   }
 
   private makeListItem(label: string, onPick: () => void): Phaser.GameObjects.Container {
@@ -193,6 +206,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private useMama(): void {
+    if (this.mamaCount <= 0) {
+      this.setBubble('Mama bitti!');
+      return;
+    }
+    this.mamaCount -= 1;
     this.busy = true;
     this.list?.destroy();
     this.list = undefined;

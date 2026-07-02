@@ -3,6 +3,8 @@ import { SceneKeys } from '../../scenes/keys';
 import { createHalayState, registerHit, timeUp, type HalayState } from '../../logic/halay';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
+import { addGradientBg, addFloor } from '../../ui/scenery';
+import { startHalayMusic, type HalayMusic } from '../../audio/halayMusic';
 
 const ARROWS = ['↑', '↓', '←', '→'] as const;
 type Arrow = (typeof ARROWS)[number];
@@ -16,9 +18,10 @@ export class HalayScene extends Phaser.Scene {
   private barFill!: Phaser.GameObjects.Rectangle;
   private timeText!: Phaser.GameObjects.Text;
   private dancers: Phaser.GameObjects.Container[] = [];
-  private endsAt = 0;
+  private limitTimer?: Phaser.Time.TimerEvent;
   private finished = false;
   private seed = 0;
+  private music?: HalayMusic;
 
   constructor() {
     super(SceneKeys.Halay);
@@ -30,7 +33,8 @@ export class HalayScene extends Phaser.Scene {
     this.seed = 0;
     this.dancers = [];
     const cx = this.scale.width / 2;
-    this.cameras.main.setBackgroundColor('#241a2e');
+    addGradientBg(this, 0x3a2450, 0x1a1226);
+    addFloor(this, 268, 0x2e2038);
 
     this.add.text(cx, 40, 'HALAY! Polisleri oyala 🎶', {
       fontFamily: 'sans-serif', fontSize: '28px', color: '#ffe066',
@@ -40,9 +44,20 @@ export class HalayScene extends Phaser.Scene {
     const ids = ['random', 'kaptan', 'kedi', 'krizi'] as const;
     ids.forEach((id, i) => {
       const d = drawCharacter(this, cx - 150 + i * 100, 210, id);
-      const prop = this.add.rectangle(24, -10, 6, 40, 0xffd43f).setStrokeStyle(1, 0x000000);
+      // Elinde halay mendili (sarı çubuk)
+      const prop = this.add.rectangle(26, -12, 6, 42, 0xffd43f).setStrokeStyle(2, 0x201a2a);
       d.add(prop);
       this.dancers.push(d);
+      // Sürekli halay ritmi: sırayla zıplama
+      this.tweens.add({
+        targets: d,
+        y: d.y - 14,
+        duration: 260,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+        delay: i * 130,
+      });
     });
 
     // Oyalama barı
@@ -70,8 +85,32 @@ export class HalayScene extends Phaser.Scene {
       if (arrow) this.press(arrow);
     });
 
-    this.endsAt = this.time.now + TIME_LIMIT_MS;
+    // Süre sınırı: göreli zamanlayıcı (create anındaki this.time.now güvenilmez)
+    this.limitTimer = this.time.addEvent({
+      delay: TIME_LIMIT_MS,
+      callback: () => {
+        if (this.finished) return;
+        this.state = timeUp(this.state);
+        if (this.state.failed) {
+          this.finished = true;
+          this.scene.start(SceneKeys.GameOver, { retryKey: SceneKeys.Halay });
+        }
+      },
+    });
     addPauseButton(this, SceneKeys.Halay);
+
+    // Halay müziği (kendi ürettiğimiz, telifsiz)
+    this.music = startHalayMusic();
+    const onPause = () => this.music?.suspend();
+    const onResume = () => this.music?.resume();
+    this.events.on('pause', onPause);
+    this.events.on('resume', onResume);
+    this.events.once('shutdown', () => {
+      this.music?.stop();
+      this.music = undefined;
+      this.events.off('pause', onPause);
+      this.events.off('resume', onResume);
+    });
   }
 
   private buildTouchButtons(): void {
@@ -96,8 +135,8 @@ export class HalayScene extends Phaser.Scene {
     const correct = arrow === this.target;
     this.state = registerHit(this.state, correct);
     this.barFill.width = 400 * this.state.fill;
-    // dansçıları hafif zıplat
-    this.dancers.forEach((d) => this.tweens.add({ targets: d, y: d.y - 8, duration: 80, yoyo: true }));
+    // dansçıları hafif "pat" ettir (zıplama tween'iyle çakışmasın diye ölçek)
+    this.dancers.forEach((d) => this.tweens.add({ targets: d, scaleX: 1.12, scaleY: 1.12, duration: 70, yoyo: true }));
     if (this.state.won) {
       this.finished = true;
       this.scene.start(SceneKeys.KeyGrab);
@@ -107,15 +146,8 @@ export class HalayScene extends Phaser.Scene {
   }
 
   update(): void {
-    if (this.finished) return;
-    const remaining = Math.max(0, this.endsAt - this.time.now);
-    this.timeText.setText(`Süre: ${(remaining / 1000).toFixed(1)} sn`);
-    if (remaining <= 0) {
-      this.state = timeUp(this.state);
-      if (this.state.failed) {
-        this.finished = true;
-        this.scene.start(SceneKeys.GameOver, { retryKey: SceneKeys.Halay });
-      }
-    }
+    if (this.finished || !this.limitTimer) return;
+    const remaining = this.limitTimer.getRemainingSeconds();
+    this.timeText.setText(`Süre: ${remaining.toFixed(1)} sn`);
   }
 }

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { browserStorage, hasSave, loadProgress, clearProgress } from '../data/save';
 import { drawCharacter } from '../ui/drawCharacter';
+import { addGradientBg, addFloor } from '../ui/scenery';
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -12,11 +13,16 @@ export class TitleScene extends Phaser.Scene {
     const cx = this.scale.width / 2;
     const storage = browserStorage();
 
-    this.add.text(cx, 70, "Random'ın Büyük Kaçışı", {
+    addGradientBg(this, 0x2b4a6f, 0x141a2e);
+    addFloor(this, 250, 0x22304a);
+
+    this.add.text(cx, 72, "Random'ın Büyük Kaçışı", {
       fontFamily: 'sans-serif', fontSize: '40px', color: '#ffe066', fontStyle: 'bold',
+      stroke: '#201a2a', strokeThickness: 5,
     }).setOrigin(0.5);
 
-    drawCharacter(this, cx, 200, 'random');
+    const hero = drawCharacter(this, cx, 185, 'random', 1.5, false);
+    this.tweens.add({ targets: hero, y: hero.y - 10, duration: 900, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
 
     this.makeButton(cx, 300, 'Yeni Oyun', () => {
       clearProgress(storage);

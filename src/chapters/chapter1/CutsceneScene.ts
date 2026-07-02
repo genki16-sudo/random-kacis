@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SceneKeys } from '../../scenes/keys';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
+import { addGradientBg, addFloor } from '../../ui/scenery';
 
 interface Beat {
   text: string;
@@ -26,11 +27,14 @@ export class CutsceneScene extends Phaser.Scene {
   create(): void {
     this.beat = 0;
     const cx = this.scale.width / 2;
-    this.cameras.main.setBackgroundColor('#20202e');
+    addGradientBg(this, 0x262636, 0x14141f);
+    addFloor(this, 262, 0x1d1d2a);
 
-    // Parmaklıklar (yer tutucu)
-    for (let i = 0; i < 10; i++) {
-      this.add.rectangle(120 + i * 30, 200, 4, 180, 0x8899aa);
+    // Hücre parmaklıkları (üst-alt çerçeve + dikey demirler)
+    this.add.rectangle(cx, 118, this.scale.width - 40, 8, 0x9aa6bd);
+    this.add.rectangle(cx, 262, this.scale.width - 40, 8, 0x9aa6bd);
+    for (let i = 0; i < 22; i++) {
+      this.add.rectangle(40 + i * 40, 190, 6, 148, 0x9aa6bd).setStrokeStyle(1, 0x5a6478);
     }
 
     drawCharacter(this, cx - 120, 210, 'random');

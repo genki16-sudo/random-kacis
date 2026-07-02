@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SceneKeys } from './keys';
+import { addGradientBg } from '../ui/scenery';
 
 interface GameOverData {
   retryKey: string;
@@ -19,7 +20,7 @@ export class GameOverScene extends Phaser.Scene {
   create(): void {
     const cx = this.scale.width / 2;
     const cy = this.scale.height / 2;
-    this.cameras.main.setBackgroundColor('#2a0d0d');
+    addGradientBg(this, 0x5a1414, 0x1e0808);
 
     this.add.text(cx, cy - 60, 'YAKALANDIN!', {
       fontFamily: 'sans-serif', fontSize: '56px', color: '#ff5555', fontStyle: 'bold',

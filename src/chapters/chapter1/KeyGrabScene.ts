@@ -3,6 +3,7 @@ import { SceneKeys } from '../../scenes/keys';
 import { evaluateQte, QTE_WINDOW_MS } from '../../logic/qte';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
+import { addGradientBg, addFloor } from '../../ui/scenery';
 
 const WINDOW_START_MS = 1600;
 
@@ -19,16 +20,20 @@ export class KeyGrabScene extends Phaser.Scene {
   create(): void {
     this.resolved = false;
     const cx = this.scale.width / 2;
-    this.cameras.main.setBackgroundColor('#1e2233');
+    addGradientBg(this, 0x233052, 0x121826);
+    addFloor(this, 290, 0x1b2438);
 
     this.add.text(cx, 50, 'Polisin cebinde anahtar var...', {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#ffffff',
+      stroke: '#201a2a', strokeThickness: 4,
     }).setOrigin(0.5);
 
     drawCharacter(this, cx - 60, 240, 'random');
-    // Polis (yer tutucu mavi) + cepte anahtar
-    this.add.rectangle(cx + 60, 240, 50, 80, 0x2244aa).setStrokeStyle(3, 0x000000);
-    this.add.star(cx + 60, 250, 4, 4, 9, 0xffd43f); // anahtar yer tutucu
+    // Polis (yer tutucu) + şapka + cepte anahtar
+    this.add.rectangle(cx + 70, 244, 52, 84, 0x2a5bd0).setStrokeStyle(3, 0x201a2a);
+    this.add.rectangle(cx + 70, 196, 46, 16, 0x1c3f96).setStrokeStyle(3, 0x201a2a); // şapka
+    this.add.circle(cx + 70, 214, 15, 0xffe0bd).setStrokeStyle(3, 0x201a2a); // yüz
+    this.add.star(cx + 82, 250, 4, 5, 11, 0xffd43f).setStrokeStyle(2, 0xd9a300); // anahtar
 
     this.cue = this.add.text(cx, 400, 'Bekle...', {
       fontFamily: 'sans-serif', fontSize: '40px', color: '#888888',

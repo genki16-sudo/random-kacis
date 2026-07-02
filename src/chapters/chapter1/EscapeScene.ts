@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SceneKeys } from '../../scenes/keys';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
+import { addGradientBg, addFloor } from '../../ui/scenery';
 import { browserStorage, clearProgress } from '../../data/save';
 
 const SPEED = 3;
@@ -19,15 +20,19 @@ export class EscapeScene extends Phaser.Scene {
   create(): void {
     this.done = false;
     this.moveDir = 0;
-    this.cameras.main.setBackgroundColor('#182818');
+    addGradientBg(this, 0x1f4a2a, 0x0f1f14);
+    addFloor(this, 356, 0x18351f);
 
     this.add.text(this.scale.width / 2, 40, 'Koridordan kaç! Kapıya ulaş →', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#ffffff',
+      stroke: '#201a2a', strokeThickness: 4,
     }).setOrigin(0.5);
 
-    // Kapı (yer tutucu)
-    this.add.rectangle(DOOR_X, 300, 60, 120, 0x8b5a2b).setStrokeStyle(3, 0x000000);
-    this.add.text(DOOR_X, 230, 'ÇIKIŞ', { fontFamily: 'sans-serif', fontSize: '16px', color: '#ffe066' }).setOrigin(0.5);
+    // Kapı
+    this.add.rectangle(DOOR_X, 300, 64, 128, 0x8b5a2b).setStrokeStyle(4, 0x201a2a);
+    this.add.rectangle(DOOR_X, 300, 44, 108, 0x6f4622).setStrokeStyle(2, 0x201a2a);
+    this.add.circle(DOOR_X + 14, 300, 5, 0xffd43f); // kapı kolu
+    this.add.text(DOOR_X, 218, 'ÇIKIŞ', { fontFamily: 'sans-serif', fontSize: '16px', color: '#ffe066', stroke: '#201a2a', strokeThickness: 3 }).setOrigin(0.5);
 
     this.hero = drawCharacter(this, 90, 300, 'random');
 

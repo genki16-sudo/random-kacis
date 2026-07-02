@@ -3,6 +3,7 @@ export const SceneKeys = {
   Title: 'Title',
   Pause: 'Pause',
   GameOver: 'GameOver',
+  ChapterIntro: 'ChapterIntro',
   Cutscene: 'Chapter1_Cutscene',
   Halay: 'Chapter1_Halay',
   KeyGrab: 'Chapter1_KeyGrab',

@@ -4,6 +4,7 @@ import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { PauseScene } from './scenes/PauseScene';
 import { GameOverScene } from './scenes/GameOverScene';
+import { ChapterIntroScene } from './scenes/ChapterIntroScene';
 import { CutsceneScene } from './chapters/chapter1/CutsceneScene';
 import { HalayScene } from './chapters/chapter1/HalayScene';
 import { KeyGrabScene } from './chapters/chapter1/KeyGrabScene';
@@ -16,6 +17,7 @@ const game = new Phaser.Game({
     TitleScene,
     PauseScene,
     GameOverScene,
+    ChapterIntroScene,
     CutsceneScene,
     HalayScene,
     KeyGrabScene,

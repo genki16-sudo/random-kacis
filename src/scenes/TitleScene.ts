@@ -18,8 +18,8 @@ export class TitleScene extends Phaser.Scene {
     addFloor(this, 250, 0x22304a);
     fadeIn(this);
 
-    this.add.text(cx, 72, "Random'ın Büyük Kaçışı", {
-      fontFamily: 'sans-serif', fontSize: '40px', color: '#ffe066', fontStyle: 'bold',
+    this.add.text(cx, 72, 'Random Köpek', {
+      fontFamily: 'sans-serif', fontSize: '46px', color: '#ffe066', fontStyle: 'bold',
       stroke: '#201a2a', strokeThickness: 5,
     }).setOrigin(0.5);
 
@@ -28,7 +28,7 @@ export class TitleScene extends Phaser.Scene {
 
     this.makeButton(cx, 300, 'Yeni Oyun', () => {
       clearProgress(storage);
-      changeScene(this, SceneKeys.Cutscene);
+      changeScene(this, SceneKeys.ChapterIntro, { title: 'Chapter 1: Kaçış', next: SceneKeys.Cutscene });
     });
 
     const saved = hasSave(storage);

@@ -46,16 +46,24 @@ Karakterler tek bir merkezi tanım dosyasında (`characters.ts` gibi) tutulur; i
 - **Tüm Random'lar** yan yana dizilir; her birinin elinde **halay aleti** (mendil, davul, zurna) vardır ve ritimle sallanırlar.
 - Oynanış: ekranda beliren yön işaretlerine (↑↓←→ / dokunma butonları) doğru sırayla ve hızlı basılır (button-mash + ritim).
 - Doğru basışlar bir "oyalama barı"nı doldurur; bar dolunca polisler halaya kapılır ve sonraki sahne açılır.
+- **Kaybetme:** Süre dolmadan bar yeterince dolmazsa (çok yanlış/geç basış) → **YAKALANDIN! ekranı** (bkz. aşağıdaki "YAKALANDIN! Ekranı").
 
 ### Sahne 3 — 🔑 Anahtar Kapma (Hızlı Tepki / QTE)
 - Herkes halaya dalmışken ekranda "**ŞİMDİ!**" belirir.
 - Doğru anda basılırsa (boşluk / ekrana dokun) Random polisin cebinden anahtarı kapar.
-- Yanlış/geç basılırsa küçük bir uyarı verilir ve tekrar denenir (çocuk dostu, cezasız).
+- **Kaybetme:** Yanlış tuşa basılır ya da doğru anı kaçırırsa → **YAKALANDIN! ekranı** (bkz. aşağıdaki "YAKALANDIN! Ekranı").
 
 ### Sahne 4 — 💨 Kaçış (kısa keşif)
 - Random anahtarla kapıyı açar; kısa bir koridorda arkadaşlarını alıp dışarı koşar.
 - Yön tuşları / dokunmatik ile Random yürütülür.
 - Chapter 1 "**Chapter 2 yakında!**" ekranıyla biter.
+
+### 💀 YAKALANDIN! Ekranı (Kaybetme)
+- Halay (Sahne 2) veya anahtar kapma (Sahne 3) başarısız olursa gösterilir.
+- Ekranda büyük harflerle "**YAKALANDIN!**" yazısı çıkar.
+- Altında bir "**Yeniden Dene**" butonu bulunur (tıklama/dokunma ile).
+- Butona basınca kaybedilen sahne baştan başlar (tüm chapter değil, sadece o mini-oyun).
+- Ortak, yeniden kullanılabilir bir sahne olarak yapılır (`GameOverScene`), hangi sahneye döneceğini parametre olarak alır.
 
 ---
 
@@ -95,6 +103,7 @@ random-kacis/
     scenes/
       BootScene.ts          # Varlıkları yükler
       TitleScene.ts         # Ana menü / başlık
+      GameOverScene.ts      # "YAKALANDIN!" + Yeniden Dene (ortak, parametreli)
     chapters/
       chapter1/
         CutsceneScene.ts    # Sahne 1
@@ -118,6 +127,6 @@ random-kacis/
 
 ## 7. Kapsam (Scope)
 
-**Chapter 1'e dahil:** 4 sahne (cutscene, halay, anahtar kapma, kaçış), 5 karakter (yer tutucu görsellerle), temel kontroller, chapter/karakter mimarisi.
+**Chapter 1'e dahil:** 4 sahne (cutscene, halay, anahtar kapma, kaçış) + YAKALANDIN!/Yeniden Dene ekranı, 5 karakter (yer tutucu görsellerle), temel kontroller, chapter/karakter mimarisi.
 
 **Chapter 1'e dahil DEĞİL (sonraya):** Random Krizi'nin dönüşümü, Chapter 2+, gerçek sanat/animasyon cilası, App Store yayını.

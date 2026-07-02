@@ -385,14 +385,44 @@ export class BattleScene extends Phaser.Scene {
     this.busy = true;
     clearProgress(browserStorage());
     const cx = this.scale.width / 2;
-    const cy = this.scale.height / 2;
-    this.add.rectangle(cx, cy, this.scale.width, this.scale.height, 0x000000, 0.7);
-    this.add.text(cx, cy - 20, 'Kazandın! 🎉', {
+
+    this.add.rectangle(cx, this.scale.height / 2, this.scale.width, this.scale.height, 0x000000, 0.78);
+    this.add.text(cx, 96, 'Kazandın! 🎉', {
       fontFamily: 'sans-serif', fontSize: '46px', color: '#ffe066', fontStyle: 'bold',
     }).setOrigin(0.5);
-    this.add.text(cx, cy + 40, 'Chapter 1 bitti — Chapter 2 yakında! (menü için tıkla)', {
-      fontFamily: 'sans-serif', fontSize: '16px', color: '#aaaaaa',
+
+    // TP 0 -> 10
+    const tpText = this.add.text(cx, 180, 'TP: 0', {
+      fontFamily: 'sans-serif', fontSize: '30px', color: '#7bd0ff', fontStyle: 'bold',
     }).setOrigin(0.5);
-    this.input.once('pointerup', () => changeScene(this, SceneKeys.Title));
+    this.tweens.addCounter({
+      from: 0, to: 10, duration: 1400, delay: 500,
+      onUpdate: (tw) => { tpText.setText(`TP: ${Math.round(tw.getValue() ?? 0)}`); },
+      onComplete: () => this.showLevelUp(cx),
+    });
+  }
+
+  private showLevelUp(cx: number): void {
+    const lvl = this.add.text(cx, 250, 'Seviye Atladın!', {
+      fontFamily: 'sans-serif', fontSize: '38px', color: '#ffe066', fontStyle: 'bold',
+      stroke: '#201a2a', strokeThickness: 4,
+    }).setOrigin(0.5).setScale(0);
+    this.tweens.add({ targets: lvl, scale: 1, duration: 400, ease: 'Back.easeOut' });
+
+    this.time.delayedCall(600, () => {
+      this.add.text(cx, 320, 'Can  10 → 13', {
+        fontFamily: 'sans-serif', fontSize: '26px', color: '#7bffa0', fontStyle: 'bold',
+      }).setOrigin(0.5);
+    });
+    this.time.delayedCall(1000, () => {
+      this.add.text(cx, 358, 'Atak  3 → 5', {
+        fontFamily: 'sans-serif', fontSize: '26px', color: '#ffb066', fontStyle: 'bold',
+      }).setOrigin(0.5);
+    });
+
+    // Chapter 2 giriş kartı
+    this.time.delayedCall(2600, () => {
+      changeScene(this, SceneKeys.ChapterIntro, { title: 'Chapter 2: Macera Başlıyor!', next: SceneKeys.Title });
+    });
   }
 }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { addGradientBg } from '../ui/scenery';
+import { fadeIn, changeScene } from '../ui/transition';
 
 interface GameOverData {
   retryKey: string;
@@ -21,6 +22,7 @@ export class GameOverScene extends Phaser.Scene {
     const cx = this.scale.width / 2;
     const cy = this.scale.height / 2;
     addGradientBg(this, 0x5a1414, 0x1e0808);
+    fadeIn(this);
 
     this.add.text(cx, cy - 60, 'YAKALANDIN!', {
       fontFamily: 'sans-serif', fontSize: '56px', color: '#ff5555', fontStyle: 'bold',
@@ -35,6 +37,6 @@ export class GameOverScene extends Phaser.Scene {
     btn.setInteractive({ useHandCursor: true });
     btn.on('pointerover', () => bg.setFillStyle(0x50507a));
     btn.on('pointerout', () => bg.setFillStyle(0x3a3a55));
-    btn.on('pointerup', () => this.scene.start(this.retryKey));
+    btn.on('pointerup', () => changeScene(this, this.retryKey));
   }
 }

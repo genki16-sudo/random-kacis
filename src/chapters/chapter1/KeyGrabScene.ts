@@ -4,6 +4,7 @@ import { evaluateQte, QTE_WINDOW_MS } from '../../logic/qte';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
+import { fadeIn, changeScene } from '../../ui/transition';
 
 const WINDOW_START_MS = 1600;
 
@@ -22,6 +23,7 @@ export class KeyGrabScene extends Phaser.Scene {
     const cx = this.scale.width / 2;
     addGradientBg(this, 0x233052, 0x121826);
     addFloor(this, 290, 0x1b2438);
+    fadeIn(this);
 
     this.add.text(cx, 50, 'Polisin cebinde anahtar var...', {
       fontFamily: 'sans-serif', fontSize: '24px', color: '#ffffff',
@@ -68,7 +70,7 @@ export class KeyGrabScene extends Phaser.Scene {
     if (ok) {
       this.resolved = true;
       this.cue.setText('Anahtarı kaptı! 🔑').setColor('#43c743');
-      this.time.delayedCall(700, () => this.scene.start(SceneKeys.Escape));
+      this.time.delayedCall(600, () => changeScene(this, SceneKeys.Escape));
     } else {
       this.fail();
     }
@@ -77,6 +79,6 @@ export class KeyGrabScene extends Phaser.Scene {
   private fail(): void {
     if (this.resolved) return;
     this.resolved = true;
-    this.scene.start(SceneKeys.GameOver, { retryKey: SceneKeys.KeyGrab });
+    changeScene(this, SceneKeys.GameOver, { retryKey: SceneKeys.KeyGrab });
   }
 }

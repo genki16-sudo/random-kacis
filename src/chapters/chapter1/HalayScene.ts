@@ -4,6 +4,7 @@ import { createHalayState, registerHit, timeUp, type HalayState } from '../../lo
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
+import { fadeIn, changeScene } from '../../ui/transition';
 import { startHalayMusic, type HalayMusic } from '../../audio/halayMusic';
 
 const ARROWS = ['↑', '↓', '←', '→'] as const;
@@ -35,6 +36,7 @@ export class HalayScene extends Phaser.Scene {
     const cx = this.scale.width / 2;
     addGradientBg(this, 0x3a2450, 0x1a1226);
     addFloor(this, 268, 0x2e2038);
+    fadeIn(this);
 
     this.add.text(cx, 40, 'HALAY! Polisleri oyala 🎶', {
       fontFamily: 'sans-serif', fontSize: '28px', color: '#ffe066',
@@ -93,7 +95,7 @@ export class HalayScene extends Phaser.Scene {
         this.state = timeUp(this.state);
         if (this.state.failed) {
           this.finished = true;
-          this.scene.start(SceneKeys.GameOver, { retryKey: SceneKeys.Halay });
+          changeScene(this, SceneKeys.GameOver, { retryKey: SceneKeys.Halay });
         }
       },
     });
@@ -139,7 +141,7 @@ export class HalayScene extends Phaser.Scene {
     this.dancers.forEach((d) => this.tweens.add({ targets: d, scaleX: 1.12, scaleY: 1.12, duration: 70, yoyo: true }));
     if (this.state.won) {
       this.finished = true;
-      this.scene.start(SceneKeys.KeyGrab);
+      changeScene(this, SceneKeys.KeyGrab);
       return;
     }
     if (correct) this.pickTarget();

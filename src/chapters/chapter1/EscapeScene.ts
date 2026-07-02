@@ -3,6 +3,7 @@ import { SceneKeys } from '../../scenes/keys';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
+import { fadeIn, changeScene } from '../../ui/transition';
 import { browserStorage, clearProgress } from '../../data/save';
 
 const SPEED = 3;
@@ -22,6 +23,7 @@ export class EscapeScene extends Phaser.Scene {
     this.moveDir = 0;
     addGradientBg(this, 0x1f4a2a, 0x0f1f14);
     addFloor(this, 356, 0x18351f);
+    fadeIn(this);
 
     this.add.text(this.scale.width / 2, 40, 'Koridordan kaç! Kapıya ulaş →', {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#ffffff',
@@ -74,6 +76,6 @@ export class EscapeScene extends Phaser.Scene {
     this.add.text(cx, this.scale.height / 2 + 40, '(menüye dönmek için tıkla)', {
       fontFamily: 'sans-serif', fontSize: '16px', color: '#aaaaaa',
     }).setOrigin(0.5);
-    this.input.once('pointerup', () => this.scene.start(SceneKeys.Title));
+    this.input.once('pointerup', () => changeScene(this, SceneKeys.Title));
   }
 }

@@ -3,6 +3,7 @@ import { SceneKeys } from '../../scenes/keys';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
+import { fadeIn, changeScene } from '../../ui/transition';
 
 interface Beat {
   text: string;
@@ -29,6 +30,7 @@ export class CutsceneScene extends Phaser.Scene {
     const cx = this.scale.width / 2;
     addGradientBg(this, 0x262636, 0x14141f);
     addFloor(this, 262, 0x1d1d2a);
+    fadeIn(this);
 
     // Hücre parmaklıkları (üst-alt çerçeve + dikey demirler)
     this.add.rectangle(cx, 118, this.scale.width - 40, 8, 0x9aa6bd);
@@ -70,7 +72,7 @@ export class CutsceneScene extends Phaser.Scene {
   private advance(): void {
     this.beat += 1;
     if (this.beat >= BEATS.length) {
-      this.scene.start(SceneKeys.Halay);
+      changeScene(this, SceneKeys.Halay);
       return;
     }
     this.showBeat();

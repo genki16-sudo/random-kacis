@@ -3,6 +3,7 @@ import { SceneKeys } from './keys';
 import { browserStorage, hasSave, loadProgress, clearProgress } from '../data/save';
 import { drawCharacter } from '../ui/drawCharacter';
 import { addGradientBg, addFloor } from '../ui/scenery';
+import { fadeIn, changeScene } from '../ui/transition';
 
 export class TitleScene extends Phaser.Scene {
   constructor() {
@@ -15,6 +16,7 @@ export class TitleScene extends Phaser.Scene {
 
     addGradientBg(this, 0x2b4a6f, 0x141a2e);
     addFloor(this, 250, 0x22304a);
+    fadeIn(this);
 
     this.add.text(cx, 72, "Random'ın Büyük Kaçışı", {
       fontFamily: 'sans-serif', fontSize: '40px', color: '#ffe066', fontStyle: 'bold',
@@ -26,13 +28,13 @@ export class TitleScene extends Phaser.Scene {
 
     this.makeButton(cx, 300, 'Yeni Oyun', () => {
       clearProgress(storage);
-      this.scene.start(SceneKeys.Cutscene);
+      changeScene(this, SceneKeys.Cutscene);
     });
 
     const saved = hasSave(storage);
     const cont = this.makeButton(cx, 370, 'Devam Et', () => {
       const data = loadProgress(storage);
-      if (data) this.scene.start(data.scene);
+      if (data) changeScene(this, data.scene);
     });
     if (!saved) {
       cont.setAlpha(0.4);
@@ -42,6 +44,10 @@ export class TitleScene extends Phaser.Scene {
     this.add.text(this.scale.width - 12, this.scale.height - 10, "Uzaylılar'ın Yaratıcılarından", {
       fontFamily: 'sans-serif', fontSize: '14px', color: '#8888aa',
     }).setOrigin(1, 1);
+
+    this.add.text(12, this.scale.height - 10, 'enkisoft', {
+      fontFamily: 'sans-serif', fontSize: '14px', color: '#8888aa',
+    }).setOrigin(0, 1);
   }
 
   private makeButton(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Container {

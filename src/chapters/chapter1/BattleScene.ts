@@ -6,7 +6,7 @@ import { drawCharacter } from '../../ui/drawCharacter';
 import { drawPolice } from '../../ui/drawPolice';
 import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
-import { playChomp, playWhack } from '../../audio/sfx';
+import { playChomp, playWhack, playApplause } from '../../audio/sfx';
 import { browserStorage, clearProgress } from '../../data/save';
 
 const RANDOM_MAX = 10;
@@ -63,6 +63,14 @@ export class BattleScene extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '26px', color: '#ff6666', fontStyle: 'bold',
       stroke: '#201a2a', strokeThickness: 4,
     }).setOrigin(0.5);
+
+    // Arkadaşlar arka planda izler (küçük, soluk)
+    const watchers = ['kaptan', 'kedi', 'krizi'] as const;
+    watchers.forEach((id, i) => {
+      const f = drawCharacter(this, 80 + i * 66, 180, id, 0.6, false);
+      f.setAlpha(0.82);
+      this.tweens.add({ targets: f, y: f.y - 8, duration: 700, ease: 'Sine.easeInOut', yoyo: true, repeat: -1, delay: i * 200 });
+    });
 
     // Kızgın Random (sol) ve kızgın Polis (sağ)
     this.heroHomeX = 220;
@@ -403,10 +411,14 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private showLevelUp(cx: number): void {
+    // Konfeti patlaması + alkış
+    this.confettiBurst(cx, 200);
+    playApplause();
+
     const lvl = this.add.text(cx, 250, 'Seviye Atladın!', {
       fontFamily: 'sans-serif', fontSize: '38px', color: '#ffe066', fontStyle: 'bold',
       stroke: '#201a2a', strokeThickness: 4,
-    }).setOrigin(0.5).setScale(0);
+    }).setOrigin(0.5).setScale(0).setDepth(10);
     this.tweens.add({ targets: lvl, scale: 1, duration: 400, ease: 'Back.easeOut' });
 
     this.time.delayedCall(600, () => {
@@ -424,5 +436,34 @@ export class BattleScene extends Phaser.Scene {
     this.time.delayedCall(2600, () => {
       changeScene(this, SceneKeys.ChapterIntro, { title: 'Chapter 2: Macera Başlıyor!', next: SceneKeys.Title });
     });
+  }
+
+  private confettiBurst(cx: number, cy: number): void {
+    const colors = [0xff5555, 0xffd43f, 0x43c743, 0x5ab0ff, 0xd98cff, 0xff8c42];
+    for (let i = 0; i < 60; i++) {
+      const piece = this.add.rectangle(cx, cy, 8, 13, colors[i % colors.length]);
+      piece.setAngle(Math.random() * 360);
+      const dx = (Math.random() - 0.5) * 760;
+      const dy = -Math.random() * 260 - 40;
+      this.tweens.add({
+        targets: piece,
+        x: cx + dx,
+        y: cy + dy,
+        angle: piece.angle + (Math.random() * 360 - 180),
+        duration: 450 + Math.random() * 200,
+        ease: 'Quad.easeOut',
+        onComplete: () => {
+          this.tweens.add({
+            targets: piece,
+            y: this.scale.height + 40,
+            angle: piece.angle + 180,
+            alpha: 0.15,
+            duration: 900 + Math.random() * 600,
+            ease: 'Quad.easeIn',
+            onComplete: () => piece.destroy(),
+          });
+        },
+      });
+    }
   }
 }

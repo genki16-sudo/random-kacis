@@ -11,8 +11,11 @@ import { playDoorCreak } from '../../audio/sfx';
 const SPEED = 3;
 const DOOR_X = 880;
 
+const FOLLOWERS = ['kaptan', 'kedi', 'krizi'] as const;
+
 export class EscapeScene extends Phaser.Scene {
   private hero!: Phaser.GameObjects.Container;
+  private friends: Phaser.GameObjects.Container[] = [];
   private doorInner!: Phaser.GameObjects.Rectangle;
   private moveDir = 0;
   private done = false;
@@ -40,6 +43,10 @@ export class EscapeScene extends Phaser.Scene {
     this.add.circle(DOOR_X + 14, 300, 5, 0xffd43f); // kapı kolu
     this.add.text(DOOR_X, 218, 'ÇIKIŞ', { fontFamily: 'sans-serif', fontSize: '16px', color: '#ffe066', stroke: '#201a2a', strokeThickness: 3 }).setOrigin(0.5);
 
+    // Arkadaşlar Random'ın arkasından gelir
+    this.friends = FOLLOWERS.map((id, i) =>
+      drawCharacter(this, 90 - (i + 1) * 58, 300, id, 0.85, false));
+
     this.hero = drawCharacter(this, 90, 300, 'random');
 
     // Sağ/sol dokunmatik butonlar
@@ -66,6 +73,10 @@ export class EscapeScene extends Phaser.Scene {
     if (this.done) return;
     this.hero.x += this.moveDir * SPEED;
     this.hero.x = Phaser.Math.Clamp(this.hero.x, 60, DOOR_X);
+    // arkadaşlar arkadan takip eder
+    this.friends.forEach((f, i) => {
+      f.x = Phaser.Math.Clamp(this.hero.x - (i + 1) * 58, 20, DOOR_X - 40);
+    });
     if (this.hero.x >= DOOR_X - 10) this.finish();
   }
 

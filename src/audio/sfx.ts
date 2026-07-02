@@ -86,6 +86,36 @@ export function playWhack(): void {
   });
 }
 
+/** Alkış: gürültü tabanlı, üst üste binen kısa "şap"lar. */
+export function playApplause(): void {
+  withContext((ctx, master) => {
+    const dur = 1.6;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+    const t0 = ctx.currentTime;
+    for (let i = 0; i < 22; i++) {
+      const t = t0 + Math.random() * dur;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1400 + Math.random() * 1600;
+      bp.Q.value = 1.2;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.35, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(master);
+      src.start(t, Math.random() * dur * 0.4, 0.12);
+    }
+    return dur + 0.3;
+  });
+}
+
 /** Isırma sesi: iki kısa "çıt" ile ısırış. */
 export function playChomp(): void {
   withContext((ctx, master) => {

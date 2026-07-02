@@ -1,16 +1,18 @@
 import Phaser from 'phaser';
 import { SceneKeys } from '../../scenes/keys';
 import { addGradientBg } from '../../ui/scenery';
-import { fadeIn } from '../../ui/transition';
+import { fadeIn, changeScene } from '../../ui/transition';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { drawPolice } from '../../ui/drawPolice';
 import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
-import { playChomp } from '../../audio/sfx';
+import { playChomp, playWhack } from '../../audio/sfx';
+import { browserStorage, clearProgress } from '../../data/save';
 
 const RANDOM_MAX = 10;
 const BOSS_MAX = 15;
 const BITE_DMG = 3;
+const POLICE_DMG = 1;
 const BAR_W = 180;
 
 export class BattleScene extends Phaser.Scene {
@@ -20,10 +22,15 @@ export class BattleScene extends Phaser.Scene {
   private menu?: Phaser.GameObjects.Container;
   private attackList?: Phaser.GameObjects.Container;
   private bossHp = BOSS_MAX;
+  private randomHp = RANDOM_MAX;
   private bossHpFill!: Phaser.GameObjects.Rectangle;
   private bossHpText!: Phaser.GameObjects.Text;
+  private randomHpFill!: Phaser.GameObjects.Rectangle;
+  private randomHpText!: Phaser.GameObjects.Text;
   private heroHomeX = 220;
+  private bossHomeX = 740;
   private busy = false;
+  private over = false;
 
   constructor() {
     super(SceneKeys.Battle);
@@ -31,7 +38,9 @@ export class BattleScene extends Phaser.Scene {
 
   create(): void {
     this.bossHp = BOSS_MAX;
+    this.randomHp = RANDOM_MAX;
     this.busy = false;
+    this.over = false;
     this.bubble = undefined;
     this.menu = undefined;
     this.attackList = undefined;
@@ -47,11 +56,14 @@ export class BattleScene extends Phaser.Scene {
 
     // Kızgın Random (sol) ve kızgın Polis (sağ)
     this.heroHomeX = 220;
+    this.bossHomeX = W - 220;
     this.hero = drawCharacter(this, this.heroHomeX, 300, 'random', 1.5, false, true);
-    this.boss = drawPolice(this, W - 220, 300, true, 1.6);
+    this.boss = drawPolice(this, this.bossHomeX, 300, true, 1.6);
 
     // Can barları
-    this.makeHpBar(40, 96, 'Random', 0x43c743, RANDOM_MAX);
+    const randomBar = this.makeHpBar(40, 96, 'Random', 0x43c743, RANDOM_MAX);
+    this.randomHpFill = randomBar.fill;
+    this.randomHpText = randomBar.text;
     const bossBar = this.makeHpBar(W - 40 - BAR_W, 96, 'Polis', 0xff5555, BOSS_MAX);
     this.bossHpFill = bossBar.fill;
     this.bossHpText = bossBar.text;
@@ -196,10 +208,7 @@ export class BattleScene extends Phaser.Scene {
     });
     this.bossHpText.setText(`${this.bossHp}/${BOSS_MAX}`);
 
-    const dmg = this.add.text(this.boss.x, this.boss.y - 70, `-${BITE_DMG}`, {
-      fontFamily: 'sans-serif', fontSize: '28px', color: '#ffd43f', fontStyle: 'bold', stroke: '#201a2a', strokeThickness: 4,
-    }).setOrigin(0.5);
-    this.tweens.add({ targets: dmg, y: dmg.y - 40, alpha: 0, duration: 800, onComplete: () => dmg.destroy() });
+    this.floatDamage(this.boss.x, this.boss.y - 70, BITE_DMG);
 
     this.time.delayedCall(450, () => {
       this.tweens.add({
@@ -208,9 +217,97 @@ export class BattleScene extends Phaser.Scene {
         duration: 420,
         ease: 'Quad.easeOut',
         onComplete: () => {
-          this.setBubble('Güzel ısırık! Sıra poliste... (yakında!)');
+          if (this.bossHp <= 0) { this.win(); return; }
+          this.policeTurn();
         },
       });
     });
+  }
+
+  private floatDamage(x: number, y: number, amount: number): void {
+    const dmg = this.add.text(x, y, `-${amount}`, {
+      fontFamily: 'sans-serif', fontSize: '28px', color: '#ffd43f', fontStyle: 'bold',
+      stroke: '#201a2a', strokeThickness: 4,
+    }).setOrigin(0.5);
+    this.tweens.add({ targets: dmg, y: y - 40, alpha: 0, duration: 800, onComplete: () => dmg.destroy() });
+  }
+
+  private policeTurn(): void {
+    const bubble = showSpeechBubble(this, this.boss.x, 224, 'İşte copum!', 130);
+
+    // Polis cebinden copunu çıkarır
+    const baton = this.add.rectangle(-46, -6, 8, 42, 0x2a1c10).setStrokeStyle(2, 0x201a2a);
+    baton.setAlpha(0);
+    this.boss.add(baton);
+
+    this.time.delayedCall(650, () => {
+      bubble.destroy();
+      this.tweens.add({ targets: baton, alpha: 1, duration: 150 });
+      this.tweens.add({
+        targets: this.boss,
+        x: this.heroHomeX + 150,
+        duration: 460,
+        ease: 'Quad.easeIn',
+        onComplete: () => this.policeHit(baton),
+      });
+    });
+  }
+
+  private policeHit(baton: Phaser.GameObjects.Rectangle): void {
+    playWhack();
+    // cop sallanır
+    this.tweens.add({ targets: baton, angle: -75, duration: 130, yoyo: true });
+    // Random irkilir
+    this.tweens.add({ targets: this.hero, x: this.heroHomeX - 14, duration: 60, yoyo: true, repeat: 2 });
+
+    this.randomHp = Math.max(0, this.randomHp - POLICE_DMG);
+    this.tweens.add({
+      targets: this.randomHpFill,
+      width: (BAR_W - 4) * (this.randomHp / RANDOM_MAX),
+      duration: 300,
+    });
+    this.randomHpText.setText(`${this.randomHp}/${RANDOM_MAX}`);
+    this.floatDamage(this.hero.x, this.hero.y - 80, POLICE_DMG);
+
+    this.time.delayedCall(500, () => {
+      this.tweens.add({ targets: baton, alpha: 0, duration: 150 });
+      this.tweens.add({
+        targets: this.boss,
+        x: this.bossHomeX,
+        duration: 460,
+        ease: 'Quad.easeOut',
+        onComplete: () => {
+          baton.destroy();
+          this.afterRound();
+        },
+      });
+    });
+  }
+
+  private afterRound(): void {
+    if (this.randomHp <= 0) {
+      changeScene(this, SceneKeys.GameOver, { retryKey: SceneKeys.Battle });
+      return;
+    }
+    this.busy = false;
+    this.setBubble('Sıra sende! ATAK kutusuna dokun.');
+    this.showMenu();
+  }
+
+  private win(): void {
+    if (this.over) return;
+    this.over = true;
+    this.busy = true;
+    clearProgress(browserStorage());
+    const cx = this.scale.width / 2;
+    const cy = this.scale.height / 2;
+    this.add.rectangle(cx, cy, this.scale.width, this.scale.height, 0x000000, 0.7);
+    this.add.text(cx, cy - 20, 'Kazandın! 🎉', {
+      fontFamily: 'sans-serif', fontSize: '46px', color: '#ffe066', fontStyle: 'bold',
+    }).setOrigin(0.5);
+    this.add.text(cx, cy + 40, 'Chapter 1 bitti — Chapter 2 yakında! (menü için tıkla)', {
+      fontFamily: 'sans-serif', fontSize: '16px', color: '#aaaaaa',
+    }).setOrigin(0.5);
+    this.input.once('pointerup', () => changeScene(this, SceneKeys.Title));
   }
 }

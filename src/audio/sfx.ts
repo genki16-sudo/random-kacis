@@ -67,6 +67,25 @@ export function playDoorCreak(): void {
   });
 }
 
+/** Cop darbesi: kısa, sert "tok" sesi. */
+export function playWhack(): void {
+  withContext((ctx, master) => {
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(240, t0);
+    osc.frequency.exponentialRampToValueAtTime(55, t0 + 0.12);
+    g.gain.setValueAtTime(0.7, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t0);
+    osc.stop(t0 + 0.18);
+    return 0.25;
+  });
+}
+
 /** Isırma sesi: iki kısa "çıt" ile ısırış. */
 export function playChomp(): void {
   withContext((ctx, master) => {

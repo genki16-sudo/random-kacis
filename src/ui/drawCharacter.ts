@@ -94,15 +94,6 @@ export function drawCharacter(
   g.arc(0, -16, 6, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160), false);
   g.strokePath();
 
-  // Gizli ajan gözlüğü
-  if (def.hasShades) {
-    g.fillStyle(0x101018, 1);
-    g.fillRoundedRect(-15, -32, 30, 9, 3);
-    g.lineStyle(2, 0x101018, 1);
-    g.lineBetween(-15, -30, -20, -31);
-    g.lineBetween(15, -30, 20, -31);
-  }
-
   // Kaptan şapkası
   if (def.hat === 'captain') {
     g.fillStyle(0x22284a, 1);

@@ -10,7 +10,6 @@ export interface CharacterDef {
   role: 'hero' | 'friend' | 'rival';
   hat?: 'captain';
   hasSunPendant?: boolean;
-  hasShades?: boolean; // gizli ajan gözlüğü
 }
 
 export const CHARACTERS: Record<CharacterId, CharacterDef> = {
@@ -18,5 +17,5 @@ export const CHARACTERS: Record<CharacterId, CharacterDef> = {
   kaptan: { id: 'kaptan', name: 'Kaptan Random', color: 0x2f9e2f, species: 'dog', role: 'friend', hat: 'captain' },
   kedi: { id: 'kedi', name: 'Random Kedi', color: 0xf2d43f, species: 'cat', role: 'friend' },
   krizi: { id: 'krizi', name: 'Random Krizi', color: 0xd98cff, species: 'toy', role: 'friend', hasSunPendant: true },
-  golge: { id: 'golge', name: 'Gölge Random', color: 0x565663, species: 'dog', role: 'rival', hasShades: true },
+  golge: { id: 'golge', name: 'Gölge Random', color: 0x565663, species: 'dog', role: 'rival' },
 };

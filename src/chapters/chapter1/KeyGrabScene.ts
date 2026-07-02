@@ -38,11 +38,13 @@ export class KeyGrabScene extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '15px', color: '#aaaaaa',
     }).setOrigin(0.5);
 
-    this.windowStart = this.time.now + WINDOW_START_MS;
-    this.windowEnd = this.windowStart + QTE_WINDOW_MS;
-
+    // Pencereyi "ŞİMDİ!" tam belirdiği anda, canlı saatle kur.
+    // (create() anındaki this.time.now henüz 0 olabildiğinden burada kurmuyoruz.)
     this.time.delayedCall(WINDOW_START_MS, () => {
-      if (!this.resolved) this.cue.setText('ŞİMDİ!').setColor('#ff5555');
+      if (this.resolved) return;
+      this.windowStart = this.time.now;
+      this.windowEnd = this.windowStart + QTE_WINDOW_MS;
+      this.cue.setText('ŞİMDİ!').setColor('#ff5555');
     });
     // Pencere kaçırılırsa kaybet
     this.time.delayedCall(WINDOW_START_MS + QTE_WINDOW_MS + 50, () => {

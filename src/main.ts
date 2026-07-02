@@ -9,7 +9,7 @@ import { HalayScene } from './chapters/chapter1/HalayScene';
 import { KeyGrabScene } from './chapters/chapter1/KeyGrabScene';
 import { EscapeScene } from './chapters/chapter1/EscapeScene';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   ...gameConfig,
   scene: [
     BootScene,
@@ -22,3 +22,8 @@ new Phaser.Game({
     EscapeScene,
   ],
 });
+
+// Geliştirme modunda test/hata ayıklama kancası (üretim derlemesinde yer almaz).
+if (import.meta.env.DEV) {
+  (window as unknown as { __game: Phaser.Game }).__game = game;
+}

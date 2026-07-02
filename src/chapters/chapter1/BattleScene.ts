@@ -13,6 +13,7 @@ const RANDOM_MAX = 10;
 const BOSS_MAX = 15;
 const BITE_DMG = 3;
 const POLICE_DMG = 1;
+const MAMA_HEAL = 3;
 const BAR_W = 180;
 
 export class BattleScene extends Phaser.Scene {
@@ -20,7 +21,9 @@ export class BattleScene extends Phaser.Scene {
   private boss!: Phaser.GameObjects.Container;
   private bubble?: Phaser.GameObjects.Container;
   private menu?: Phaser.GameObjects.Container;
-  private attackList?: Phaser.GameObjects.Container;
+  private list?: Phaser.GameObjects.Container;
+  private healTutorialShown = false;
+  private itemsUnlocked = false;
   private bossHp = BOSS_MAX;
   private randomHp = RANDOM_MAX;
   private bossHpFill!: Phaser.GameObjects.Rectangle;
@@ -41,9 +44,11 @@ export class BattleScene extends Phaser.Scene {
     this.randomHp = RANDOM_MAX;
     this.busy = false;
     this.over = false;
+    this.healTutorialShown = false;
+    this.itemsUnlocked = false;
     this.bubble = undefined;
     this.menu = undefined;
-    this.attackList = undefined;
+    this.list = undefined;
     const W = this.scale.width;
 
     addGradientBg(this, 0x2a1030, 0x0c0410);
@@ -110,7 +115,8 @@ export class BattleScene extends Phaser.Scene {
     atak.on('pointerup', () => { if (!this.busy) this.showAttackList(); });
     esya.on('pointerup', () => {
       if (this.busy) return;
-      this.setBubble('Eşyalar yakında! Şimdilik ATAK.');
+      if (!this.itemsUnlocked) { this.setBubble('Önce ATAK ile ısıralım!'); return; }
+      this.showItemList();
     });
 
     this.menu = this.add.container(0, 0, [atak, esya]);
@@ -161,10 +167,20 @@ export class BattleScene extends Phaser.Scene {
     this.menu?.destroy();
     this.menu = undefined;
     this.setBubble('ISIRMA saldırısına dokun!');
+    this.list = this.makeListItem('Isırma', () => this.performBite());
+  }
 
+  private showItemList(): void {
+    this.menu?.destroy();
+    this.menu = undefined;
+    this.setBubble("Mama'yı seç!");
+    this.list = this.makeListItem('Mama 🦴', () => this.useMama());
+  }
+
+  private makeListItem(label: string, onPick: () => void): Phaser.GameObjects.Container {
     const W = this.scale.width;
     const bg = this.add.rectangle(0, 0, 220, 56, 0x3a2036).setStrokeStyle(3, 0xffe066);
-    const txt = this.add.text(0, 0, 'Isırma', {
+    const txt = this.add.text(0, 0, label, {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5);
     const item = this.add.container(W / 2, 468, [bg, txt]);
@@ -172,14 +188,50 @@ export class BattleScene extends Phaser.Scene {
     item.setInteractive({ useHandCursor: true });
     item.on('pointerover', () => bg.setFillStyle(0x50305a));
     item.on('pointerout', () => bg.setFillStyle(0x3a2036));
-    item.on('pointerup', () => { if (!this.busy) this.performBite(); });
-    this.attackList = item;
+    item.on('pointerup', () => { if (!this.busy) onPick(); });
+    return item;
+  }
+
+  private useMama(): void {
+    this.busy = true;
+    this.list?.destroy();
+    this.list = undefined;
+    this.bubble?.destroy();
+    this.bubble = undefined;
+
+    const before = this.randomHp;
+    this.randomHp = Math.min(RANDOM_MAX, this.randomHp + MAMA_HEAL);
+    const gain = this.randomHp - before;
+
+    this.tweens.add({
+      targets: this.randomHpFill,
+      width: (BAR_W - 4) * (this.randomHp / RANDOM_MAX),
+      duration: 300,
+    });
+    this.randomHpText.setText(`${this.randomHp}/${RANDOM_MAX}`);
+
+    // Random mamayı yer (mutlu zıplama)
+    playChomp();
+    this.tweens.add({ targets: this.hero, scaleX: 1.6, scaleY: 1.7, duration: 130, yoyo: true });
+
+    // "+3 (can +1)" — mamanın gücü ve gerçekte eklenen can
+    const t = this.add.text(this.hero.x, this.hero.y - 80, `+${MAMA_HEAL} (can +${gain})`, {
+      fontFamily: 'sans-serif', fontSize: '26px', color: '#7bffa0', fontStyle: 'bold',
+      stroke: '#201a2a', strokeThickness: 4,
+    }).setOrigin(0.5);
+    this.tweens.add({ targets: t, y: t.y - 40, alpha: 0, duration: 1000, onComplete: () => t.destroy() });
+
+    // Eşya kullanmak da sırayı bitirir -> polisin sırası
+    this.time.delayedCall(1000, () => {
+      if (this.bossHp <= 0) { this.win(); return; }
+      this.policeTurn();
+    });
   }
 
   private performBite(): void {
     this.busy = true;
-    this.attackList?.destroy();
-    this.attackList = undefined;
+    this.list?.destroy();
+    this.list = undefined;
     this.bubble?.destroy();
     this.bubble = undefined;
 
@@ -289,9 +341,24 @@ export class BattleScene extends Phaser.Scene {
       changeScene(this, SceneKeys.GameOver, { retryKey: SceneKeys.Battle });
       return;
     }
+    if (!this.healTutorialShown) {
+      this.healTutorialShown = true;
+      this.startHealTutorial();
+      return;
+    }
     this.busy = false;
-    this.setBubble('Sıra sende! ATAK kutusuna dokun.');
+    this.setBubble('Sıra sende! ATAK ya da EŞYALAR.');
     this.showMenu();
+  }
+
+  private startHealTutorial(): void {
+    this.itemsUnlocked = true;
+    this.setBubble('Ah, acıdı!');
+    this.time.delayedCall(1400, () => {
+      this.setBubble("Neyse, haydi iyileşelim! EŞYALAR kutusuna dokun, Mama'yı seç.");
+      this.busy = false;
+      this.showMenu();
+    });
   }
 
   private win(): void {

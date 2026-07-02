@@ -32,6 +32,12 @@ Karakterler tek bir merkezi tanım dosyasında (`characters.ts` gibi) tutulur; i
 
 ## 3. Chapter 1 — "Büyük Kaçış" Akışı
 
+### Sahne 0 — 🏠 Başlangıç Menüsü (TitleScene)
+- Oyun açılınca gelen ana menü.
+- **Yeni Oyun** butonu: oyunu baştan başlatır (varsa eski kaydın üzerine yazılacağı için önce onay sorulur).
+- **Devam Et** butonu: yalnızca kayıtlı ilerleme varsa **aktif** olur; yoksa soluk/pasif görünür. Basınca kaydedilen sahneden devam eder.
+- Sağ alt köşede küçük yazı: **"Uzaylılar'ın Yaratıcılarından"** (aynı ekibin başka bir oyun/kitap markasına gönderme).
+
 ### Sahne 1 — 🎬 Cutscene: Hapis
 1. Random ve 3 arkadaşı (Kaptan Random, Random Kedi, Random Krizi) kafeste; konuşma balonlarıyla kaçış planı yaparlar.
 2. Random Kedi ince gövdesiyle parmaklıkların arasından sıyrılır.
@@ -58,6 +64,11 @@ Karakterler tek bir merkezi tanım dosyasında (`characters.ts` gibi) tutulur; i
 - Yön tuşları / dokunmatik ile Random yürütülür.
 - Chapter 1 "**Chapter 2 yakında!**" ekranıyla biter.
 
+### ⏸️ Duraklatma & Kayıt
+- Oyun sahnelerinde (cutscene/keşif) ekranın köşesinde küçük bir **Durdurma (⏸️) tuşu** bulunur.
+- Basınca oyun durur ve bir duraklatma menüsü açılır: **Devam Et** (oyuna dön) ve **Kaydet ve Çık** (ilerlemeyi kaydedip başlangıç menüsüne döner).
+- Kayıt, o an hangi sahnede/chapter'da olunduğunu tutar.
+
 ### 💀 YAKALANDIN! Ekranı (Kaybetme)
 - Halay (Sahne 2) veya anahtar kapma (Sahne 3) başarısız olursa gösterilir.
 - Ekranda büyük harflerle "**YAKALANDIN!**" yazısı çıkar.
@@ -77,6 +88,7 @@ Hem masaüstü hem dokunmatik desteklenir.
 | Halay | Ok tuşları ↑↓←→ | Ekran yön butonları |
 | Anahtar kapma | Boşluk | Ekrana dokunma |
 | Keşif (yürüme) | Ok tuşları | Ekran yön butonları |
+| Duraklat | Esc / ⏸️ tuşu | Köşedeki ⏸️ butonu |
 
 ---
 
@@ -89,6 +101,7 @@ Hem masaüstü hem dokunmatik desteklenir.
 - **Sahne yapısı:** Her sahne ayrı bir Phaser `Scene` sınıfı/dosyası.
 - **Chapter sistemi:** Her bölüm kendi klasöründe (`src/chapters/chapter1/...`), sahneleri bir listede kayıtlı → yeni bölüm eklemek yeni klasör + kayıt.
 - **Karakter tanımları:** Merkezi bir veri dosyasında (isim/renk/özellik) → kolay değişiklik.
+- **Kayıt sistemi:** İlerleme (aktif chapter + sahne) tarayıcıda `localStorage`, iOS'ta Capacitor Preferences ile saklanır; ortak bir `save.ts` arayüzü ikisini soyutlar. "Devam Et" bu kaydı okur; "Kaydet ve Çık" yazar.
 - **Grafikler:** Başlangıçta basit renkli şekiller / yer tutucu görseller; oynanış oturunca güzelleştirilir.
 - **Ses:** Kendi ürettiğimiz veya telifsiz (CC0) ses/müzik; telifli içerik kullanılmaz.
 
@@ -100,9 +113,11 @@ random-kacis/
     config.ts               # Oyun ayarları (çözünürlük, ölçekleme)
     data/
       characters.ts         # Tüm karakter tanımları (isim/renk/özellik)
+      save.ts               # Kayıt/yükleme (localStorage + Capacitor Preferences)
     scenes/
       BootScene.ts          # Varlıkları yükler
-      TitleScene.ts         # Ana menü / başlık
+      TitleScene.ts         # Ana menü: Yeni Oyun / Devam Et + "Uzaylılar'ın Yaratıcılarından"
+      PauseScene.ts         # Duraklatma menüsü: Devam Et / Kaydet ve Çık
       GameOverScene.ts      # "YAKALANDIN!" + Yeniden Dene (ortak, parametreli)
     chapters/
       chapter1/
@@ -127,6 +142,6 @@ random-kacis/
 
 ## 7. Kapsam (Scope)
 
-**Chapter 1'e dahil:** 4 sahne (cutscene, halay, anahtar kapma, kaçış) + YAKALANDIN!/Yeniden Dene ekranı, 5 karakter (yer tutucu görsellerle), temel kontroller, chapter/karakter mimarisi.
+**Chapter 1'e dahil:** Başlangıç menüsü (Yeni Oyun / Devam Et + "Uzaylılar'ın Yaratıcılarından"), 4 sahne (cutscene, halay, anahtar kapma, kaçış), duraklatma + Kaydet ve Çık, YAKALANDIN!/Yeniden Dene ekranı, kayıt sistemi, 5 karakter (yer tutucu görsellerle), temel kontroller, chapter/karakter mimarisi.
 
 **Chapter 1'e dahil DEĞİL (sonraya):** Random Krizi'nin dönüşümü, Chapter 2+, gerçek sanat/animasyon cilası, App Store yayını.

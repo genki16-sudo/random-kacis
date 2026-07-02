@@ -8,6 +8,7 @@ export const SceneKeys = {
   Halay: 'Chapter1_Halay',
   KeyGrab: 'Chapter1_KeyGrab',
   Escape: 'Chapter1_Escape',
+  Battle: 'Chapter1_Battle',
 } as const;
 
 export type SceneKey = (typeof SceneKeys)[keyof typeof SceneKeys];

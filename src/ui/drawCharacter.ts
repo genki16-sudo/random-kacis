@@ -21,6 +21,7 @@ export function drawCharacter(
   id: CharacterId,
   scale = 1,
   showLabel = true,
+  angry = false,
 ): Phaser.GameObjects.Container {
   const def = CHARACTERS[id];
   const c = scene.add.container(x, y);
@@ -85,6 +86,13 @@ export function drawCharacter(
   g.fillStyle(0x201a2a, 1);
   g.fillCircle(-6, -27, 3);
   g.fillCircle(10, -27, 3);
+
+  // Kızgın kaşlar
+  if (angry) {
+    g.lineStyle(4, OUTLINE, 1);
+    g.lineBetween(-14, -36, -3, -32);
+    g.lineBetween(14, -36, 3, -32);
+  }
 
   // Burun + ağız
   g.fillStyle(0x201a2a, 1);

@@ -1,16 +1,19 @@
 import Phaser from 'phaser';
 import { SceneKeys } from '../../scenes/keys';
 import { drawCharacter } from '../../ui/drawCharacter';
+import { drawPolice } from '../../ui/drawPolice';
+import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
 import { fadeIn, changeScene } from '../../ui/transition';
-import { browserStorage, clearProgress } from '../../data/save';
+import { playDoorCreak } from '../../audio/sfx';
 
 const SPEED = 3;
 const DOOR_X = 880;
 
 export class EscapeScene extends Phaser.Scene {
   private hero!: Phaser.GameObjects.Container;
+  private doorInner!: Phaser.GameObjects.Rectangle;
   private moveDir = 0;
   private done = false;
 
@@ -30,9 +33,10 @@ export class EscapeScene extends Phaser.Scene {
       stroke: '#201a2a', strokeThickness: 4,
     }).setOrigin(0.5);
 
-    // Kapı
+    // Kapı (çerçeve + karanlık aralık + açılan iç panel + kol)
     this.add.rectangle(DOOR_X, 300, 64, 128, 0x8b5a2b).setStrokeStyle(4, 0x201a2a);
-    this.add.rectangle(DOOR_X, 300, 44, 108, 0x6f4622).setStrokeStyle(2, 0x201a2a);
+    this.add.rectangle(DOOR_X, 300, 44, 108, 0x05070a); // arkadaki karanlık
+    this.doorInner = this.add.rectangle(DOOR_X, 300, 44, 108, 0x6f4622).setStrokeStyle(2, 0x201a2a);
     this.add.circle(DOOR_X + 14, 300, 5, 0xffd43f); // kapı kolu
     this.add.text(DOOR_X, 218, 'ÇIKIŞ', { fontFamily: 'sans-serif', fontSize: '16px', color: '#ffe066', stroke: '#201a2a', strokeThickness: 3 }).setOrigin(0.5);
 
@@ -67,15 +71,29 @@ export class EscapeScene extends Phaser.Scene {
 
   private finish(): void {
     this.done = true;
-    clearProgress(browserStorage());
-    const cx = this.scale.width / 2;
-    this.add.rectangle(cx, this.scale.height / 2, this.scale.width, this.scale.height, 0x000000, 0.7);
-    this.add.text(cx, this.scale.height / 2 - 20, 'Chapter 2 yakında!', {
-      fontFamily: 'sans-serif', fontSize: '44px', color: '#ffe066', fontStyle: 'bold',
-    }).setOrigin(0.5);
-    this.add.text(cx, this.scale.height / 2 + 40, '(menüye dönmek için tıkla)', {
-      fontFamily: 'sans-serif', fontSize: '16px', color: '#aaaaaa',
-    }).setOrigin(0.5);
-    this.input.once('pointerup', () => changeScene(this, SceneKeys.Title));
+    this.moveDir = 0;
+
+    // Kapı gıcırt sesiyle açılır (iç panel aralanır, karanlık görünür)
+    playDoorCreak();
+    this.tweens.add({ targets: this.doorInner, scaleX: 0.12, duration: 800, ease: 'Quad.easeIn' });
+
+    // Random şaşkınlıkla geri çekilir
+    this.tweens.add({ targets: this.hero, x: DOOR_X - 170, duration: 500, ease: 'Quad.easeOut' });
+
+    // Kapıdan polis çıkar
+    const police = drawPolice(this, DOOR_X, 300, true, 1.0);
+    police.setAlpha(0);
+    this.time.delayedCall(700, () => {
+      this.tweens.add({ targets: police, alpha: 1, duration: 200 });
+      this.tweens.add({ targets: police, x: DOOR_X - 70, duration: 700, ease: 'Quad.easeOut' });
+    });
+
+    // Random "Eyvah!" der
+    this.time.delayedCall(1500, () => {
+      showSpeechBubble(this, this.hero.x, this.hero.y - 60, 'Eyvah!', 120);
+    });
+
+    // Savaş başlar
+    this.time.delayedCall(2700, () => changeScene(this, SceneKeys.Battle));
   }
 }

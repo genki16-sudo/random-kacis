@@ -2,15 +2,34 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <title>Random'ın Büyük Kaçışı</title>
+
+    <!-- PWA / iPad ana ekrana ekleme -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#1a1a24" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Random Köpek" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="icon" type="image/png" href="./icon-192.png" />
+
     <style>
-      html, body { margin: 0; padding: 0; background: #1a1a24; height: 100%; }
+      html, body { margin: 0; padding: 0; background: #1a1a24; height: 100%; overflow: hidden; overscroll-behavior: none; }
       #game { width: 100vw; height: 100vh; }
     </style>
   </head>
   <body>
     <div id="game"></div>
     <script type="module" src="/src/main.ts"></script>
+    <script>
+      // Çevrimdışı çalışma: service worker'ı alt-yola uyumlu (relative) kaydet
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

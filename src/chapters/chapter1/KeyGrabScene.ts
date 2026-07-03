@@ -1,84 +1,77 @@
 import Phaser from 'phaser';
 import { SceneKeys } from '../../scenes/keys';
-import { evaluateQte, QTE_WINDOW_MS } from '../../logic/qte';
 import { drawCharacter } from '../../ui/drawCharacter';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
 import { fadeIn, changeScene } from '../../ui/transition';
 
-const WINDOW_START_MS = 1600;
+interface Beat {
+  text: string;
+}
+
+const BEATS: Beat[] = [
+  { text: 'Polisler halayla oyalanırken Random usulca yaklaştı...' },
+  { text: 'Polisin cebinde parlayan anahtarı gördü. 🔑' },
+  { text: 'Dişleriyle nazikçe tuttu... ve usulca çekti!' },
+  { text: 'Anahtarı kaptı! Şimdi kapıya koşma zamanı!' },
+];
 
 export class KeyGrabScene extends Phaser.Scene {
-  private windowStart = 0;
-  private windowEnd = 0;
-  private cue!: Phaser.GameObjects.Text;
-  private resolved = false;
+  private beat = 0;
+  private caption!: Phaser.GameObjects.Text;
+  private key!: Phaser.GameObjects.Star;
 
   constructor() {
     super(SceneKeys.KeyGrab);
   }
 
   create(): void {
-    this.resolved = false;
+    this.beat = 0;
     const cx = this.scale.width / 2;
     addGradientBg(this, 0x233052, 0x121826);
     addFloor(this, 290, 0x1b2438);
     fadeIn(this);
-
-    this.add.text(cx, 50, 'Polisin cebinde anahtar var...', {
-      fontFamily: 'sans-serif', fontSize: '24px', color: '#ffffff',
-      stroke: '#201a2a', strokeThickness: 4,
-    }).setOrigin(0.5);
 
     drawCharacter(this, cx - 60, 240, 'random');
     // Polis (yer tutucu) + şapka + cepte anahtar
     this.add.rectangle(cx + 70, 244, 52, 84, 0x2a5bd0).setStrokeStyle(3, 0x201a2a);
     this.add.rectangle(cx + 70, 196, 46, 16, 0x1c3f96).setStrokeStyle(3, 0x201a2a); // şapka
     this.add.circle(cx + 70, 214, 15, 0xffe0bd).setStrokeStyle(3, 0x201a2a); // yüz
-    this.add.star(cx + 82, 250, 4, 5, 11, 0xffd43f).setStrokeStyle(2, 0xd9a300); // anahtar
+    this.key = this.add.star(cx + 82, 250, 4, 5, 11, 0xffd43f).setStrokeStyle(2, 0xd9a300); // anahtar
 
-    this.cue = this.add.text(cx, 400, 'Bekle...', {
-      fontFamily: 'sans-serif', fontSize: '40px', color: '#888888',
+    const box = this.add.rectangle(cx, 420, this.scale.width - 80, 110, 0x000000, 0.7)
+      .setStrokeStyle(2, 0xffffff);
+    this.caption = this.add.text(box.x, box.y, '', {
+      fontFamily: 'sans-serif', fontSize: '20px', color: '#ffffff',
+      wordWrap: { width: this.scale.width - 130 }, align: 'center',
     }).setOrigin(0.5);
 
-    this.add.text(cx, 470, 'ŞİMDİ! yazınca boşluğa bas / ekrana dokun', {
-      fontFamily: 'sans-serif', fontSize: '15px', color: '#aaaaaa',
+    this.add.text(cx, 490, '(devam etmek için tıkla)', {
+      fontFamily: 'sans-serif', fontSize: '14px', color: '#aaaaaa',
     }).setOrigin(0.5);
 
-    // Pencereyi "ŞİMDİ!" tam belirdiği anda, canlı saatle kur.
-    // (create() anındaki this.time.now henüz 0 olabildiğinden burada kurmuyoruz.)
-    this.time.delayedCall(WINDOW_START_MS, () => {
-      if (this.resolved) return;
-      this.windowStart = this.time.now;
-      this.windowEnd = this.windowStart + QTE_WINDOW_MS;
-      this.cue.setText('ŞİMDİ!').setColor('#ff5555');
-    });
-    // Pencere kaçırılırsa kaybet
-    this.time.delayedCall(WINDOW_START_MS + QTE_WINDOW_MS + 50, () => {
-      if (!this.resolved) this.fail();
-    });
+    this.showBeat();
 
-    this.input.keyboard?.on('keydown-SPACE', () => this.attempt());
-    this.input.on('pointerup', () => this.attempt());
+    this.input.on('pointerup', () => this.advance());
+    this.input.keyboard?.on('keydown-SPACE', () => this.advance());
 
     addPauseButton(this, SceneKeys.KeyGrab);
   }
 
-  private attempt(): void {
-    if (this.resolved) return;
-    const ok = evaluateQte(this.time.now, this.windowStart, this.windowEnd);
-    if (ok) {
-      this.resolved = true;
-      this.cue.setText('Anahtarı kaptı! 🔑').setColor('#43c743');
-      this.time.delayedCall(600, () => changeScene(this, SceneKeys.Escape));
-    } else {
-      this.fail();
+  private showBeat(): void {
+    this.caption.setText(BEATS[this.beat].text);
+    // Son beat'te anahtar Random'a "geçer" (görsel ipucu)
+    if (this.beat === BEATS.length - 1) {
+      this.key.setPosition(this.scale.width / 2 - 44, 236);
     }
   }
 
-  private fail(): void {
-    if (this.resolved) return;
-    this.resolved = true;
-    changeScene(this, SceneKeys.GameOver, { retryKey: SceneKeys.KeyGrab });
+  private advance(): void {
+    this.beat += 1;
+    if (this.beat >= BEATS.length) {
+      changeScene(this, SceneKeys.Escape);
+      return;
+    }
+    this.showBeat();
   }
 }

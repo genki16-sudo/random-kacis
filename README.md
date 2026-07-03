@@ -75,10 +75,18 @@ docs/superpowers/       # tasarım spec'i ve Chapter 1 planı
 - **Yayına alındı:** GitHub Pages + otomatik deploy (GitHub Actions)
 - Capacitor iOS iskeleti hazır (native App Store derlemesi için — Xcode.app gerektirir, şimdilik kullanmadık)
 
-### ⏭️ Sıradaki (yarın devam)
-- **Chapter 2**'yi tasarlayıp yapmak (Title ekranında "Chapter 2" kartı zaten var)
-- Fikirler: yeni sahne(ler), yeni düşman/bölüm, hikâyenin devamı
-- İstersek: JS paketi büyük (~1.2 MB) → ileride code-splitting ile küçültme (aciliyet yok)
+### ✅ Tamamlananlar (Chapter 2)
+- **Paper Mario 2.5D** orman: 4 yönlü gezinme (ok tuşları/WASD + dokunmatik yön pedi), arkadaşlar yılan gibi takip eder, derinliğe göre ölçekleme, kamera takibi
+- **ForestScene:** ormanda gez → "Köpekçikler Parkı" tabelası ("kuranlar: Köpekçikler") → içeri gir
+- **ParkScene:** köpek kulübeleri + dükkan → "Aaa dükkan! Haydi bir bakalım" → içeri → "Devamı yakında…" → menü
+- Saf mantık modülleri: `logic/follow.ts` (takip izi), `logic/depth.ts` (derinlik) + testleri
+- Chapter 1 savaş sonu kartı Chapter 2'ye bağlandı
+- Spec: `docs/superpowers/specs/2026-07-03-chapter2-design.md`, plan: `docs/superpowers/plans/2026-07-03-chapter2.md`
+
+### ⏭️ Sıradaki
+- **Dükkan içi sahne** (eşya alma vb.) — "Devamı yakında" oradan devam edecek
+- Park içine ek karakterler/etkileşimler; ses efektleri
+- İstersek: JS paketi büyük (~1.2 MB) → ileride code-splitting (aciliyet yok)
 
 ### 🔗 Önemli bilgiler
 - **Repo:** https://github.com/genki16-sudo/random-kacis (public)

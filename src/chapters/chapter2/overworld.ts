@@ -56,6 +56,13 @@ export class Overworld {
     this.marching = { x: targetX, y: targetY, done: onArrive };
   }
 
+  private frozen = false;
+
+  /** Girdiyi dondur (geçiş/cutscene sırasında). march yine de çalışır. */
+  freeze(): void {
+    this.frozen = true;
+  }
+
   private inputVec(): { vx: number; vy: number } {
     let vx = 0;
     let vy = 0;
@@ -85,6 +92,9 @@ export class Overworld {
       }
       vx = dx / dist;
       vy = dy / dist;
+    } else if (this.frozen) {
+      vx = 0;
+      vy = 0;
     } else {
       const v = this.inputVec();
       vx = v.vx;

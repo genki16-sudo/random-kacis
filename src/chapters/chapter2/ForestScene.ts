@@ -35,7 +35,7 @@ export class ForestScene extends Phaser.Scene {
       drawTree(this, 200 + i * 190, 330 + (i % 2) * 20, 1).setDepth(-40 + i);
     }
     for (let i = 0; i < 16; i++) {
-      drawBush(this, 140 + i * 140, 480, 1).setDepth(400 + i);
+      drawBush(this, 140 + i * 140, 480, 1).setDepth(500 + i);
     }
 
     // Patika (ortadan sağa uzanan açık şerit)
@@ -86,6 +86,7 @@ export class ForestScene extends Phaser.Scene {
     // Park girişine ulaşınca: bir kez march başlat → ParkScene
     if (!this.leaving && this.world.pos().x >= GATE_X - 40) {
       this.leaving = true;
+      this.world.freeze();
       this.world.march(GATE_X, 360, () => changeScene(this, SceneKeys.Chapter2_Park));
     }
   }

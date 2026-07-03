@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SceneKeys } from '../../scenes/keys';
 import { drawCharacter } from '../../ui/drawCharacter';
+import { drawPolice } from '../../ui/drawPolice';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
 import { fadeIn, changeScene } from '../../ui/transition';
@@ -33,11 +34,9 @@ export class KeyGrabScene extends Phaser.Scene {
     fadeIn(this);
 
     drawCharacter(this, cx - 60, 240, 'random');
-    // Polis (yer tutucu) + şapka + cepte anahtar
-    this.add.rectangle(cx + 70, 244, 52, 84, 0x2a5bd0).setStrokeStyle(3, 0x201a2a);
-    this.add.rectangle(cx + 70, 196, 46, 16, 0x1c3f96).setStrokeStyle(3, 0x201a2a); // şapka
-    this.add.circle(cx + 70, 214, 15, 0xffe0bd).setStrokeStyle(3, 0x201a2a); // yüz
-    this.key = this.add.star(cx + 82, 250, 4, 5, 11, 0xffd43f).setStrokeStyle(2, 0xd9a300); // anahtar
+    // Polis memuru (kızgın) — cebinde anahtar
+    drawPolice(this, cx + 82, 236, true, 1.15);
+    this.key = this.add.star(cx + 96, 262, 4, 5, 11, 0xffd43f).setStrokeStyle(2, 0xd9a300); // cepteki anahtar
 
     const box = this.add.rectangle(cx, 420, this.scale.width - 80, 110, 0x000000, 0.7)
       .setStrokeStyle(2, 0xffffff);

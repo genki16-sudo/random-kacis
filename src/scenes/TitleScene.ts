@@ -41,13 +41,9 @@ export class TitleScene extends Phaser.Scene {
       cont.disableInteractive();
     }
 
-    this.add.text(this.scale.width - 12, this.scale.height - 10, "Uzaylılar'ın Yaratıcılarından", {
+    this.add.text(this.scale.width - 12, this.scale.height - 10, 'enkisoft', {
       fontFamily: 'sans-serif', fontSize: '14px', color: '#8888aa',
     }).setOrigin(1, 1);
-
-    this.add.text(12, this.scale.height - 10, 'enkisoft', {
-      fontFamily: 'sans-serif', fontSize: '14px', color: '#8888aa',
-    }).setOrigin(0, 1);
   }
 
   private makeButton(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Container {

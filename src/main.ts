@@ -10,6 +10,8 @@ import { HalayScene } from './chapters/chapter1/HalayScene';
 import { KeyGrabScene } from './chapters/chapter1/KeyGrabScene';
 import { EscapeScene } from './chapters/chapter1/EscapeScene';
 import { BattleScene } from './chapters/chapter1/BattleScene';
+import { ForestScene } from './chapters/chapter2/ForestScene';
+import { ParkScene } from './chapters/chapter2/ParkScene';
 
 const game = new Phaser.Game({
   ...gameConfig,
@@ -24,6 +26,8 @@ const game = new Phaser.Game({
     KeyGrabScene,
     EscapeScene,
     BattleScene,
+    ForestScene,
+    ParkScene,
   ],
 });
 

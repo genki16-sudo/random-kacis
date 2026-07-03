@@ -434,7 +434,7 @@ export class BattleScene extends Phaser.Scene {
 
     // Chapter 2 giriş kartı
     this.time.delayedCall(2600, () => {
-      changeScene(this, SceneKeys.ChapterIntro, { title: 'Chapter 2: Macera Başlıyor!', next: SceneKeys.Title });
+      changeScene(this, SceneKeys.ChapterIntro, { title: 'Chapter 2: Köpekçikler Parkı', next: SceneKeys.Chapter2_Forest });
     });
   }
 

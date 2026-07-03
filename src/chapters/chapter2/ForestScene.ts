@@ -74,7 +74,7 @@ export class ForestScene extends Phaser.Scene {
   }
 
   update(): void {
-    if (this.leaving) return;
+    // Not: `leaving` sırasında da world.update() çağrılmalı ki march ilerlesin.
     this.world.update();
 
     // Hareket başlayınca yönerge balonunu gizle
@@ -83,8 +83,8 @@ export class ForestScene extends Phaser.Scene {
       this.bubble = undefined;
     }
 
-    // Park girişine ulaşınca: içeri yürü → ParkScene
-    if (this.world.pos().x >= GATE_X - 40) {
+    // Park girişine ulaşınca: bir kez march başlat → ParkScene
+    if (!this.leaving && this.world.pos().x >= GATE_X - 40) {
       this.leaving = true;
       this.world.march(GATE_X, 360, () => changeScene(this, SceneKeys.Chapter2_Park));
     }

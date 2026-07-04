@@ -7,6 +7,8 @@ import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
 import { fadeIn } from '../../ui/transition';
+import { browserStorage } from '../../data/save';
+import { GameState, loadState, saveState, buy, canBuy } from '../../state/gameState';
 
 const OUTLINE = 0x201a2a;
 
@@ -19,8 +21,7 @@ interface ShopItem {
 }
 
 export class ShopScene extends Phaser.Scene {
-  private rd = 100;
-  private counts: Record<string, number> = {};
+  private state!: GameState;
   private balanceText!: Phaser.GameObjects.Text;
 
   constructor() {
@@ -28,8 +29,11 @@ export class ShopScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.rd = 100;
-    this.counts = {};
+    this.state = loadState(browserStorage());
+    if (this.state.rd === 0 && !this.state.tutorialDone) {
+      this.state = { ...this.state, rd: 100 };
+      saveState(this.state, browserStorage());
+    }
     const cx = this.scale.width / 2;
     addGradientBg(this, 0xd7b98a, 0x9c7a52);
     addFloor(this, 360, 0x7a4f2c);
@@ -81,7 +85,7 @@ export class ShopScene extends Phaser.Scene {
     items.forEach((it) => this.addItem(it));
 
     // RD bakiyesi (sol üst)
-    this.balanceText = this.add.text(16, 14, `💰 ${this.rd} RD`, {
+    this.balanceText = this.add.text(16, 14, `💰 ${this.state.rd} RD`, {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#ffe066', fontStyle: 'bold',
       stroke: '#201a2a', strokeThickness: 5,
     }).setDepth(600);
@@ -123,14 +127,15 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private buy(it: ShopItem): void {
-    if (this.rd < it.price) {
-      this.floatText(it.x, 300, 'Yetersiz RD!', '#ff6b6b');
+    if (!canBuy(this.state, it.key as 'mama' | 'guc' | 'bot')) {
+      const reason = it.key === 'bot' && this.state.botVar ? 'Zaten aldın' : 'Yetersiz RD!';
+      this.floatText(it.x, 300, reason, '#ff6b6b');
       return;
     }
-    this.rd -= it.price;
-    this.counts[it.key] = (this.counts[it.key] ?? 0) + 1;
-    this.balanceText.setText(`💰 ${this.rd} RD`);
-    this.floatText(it.x, 300, `+1 (×${this.counts[it.key]})`, '#7CFC7C');
+    this.state = buy(this.state, it.key as 'mama' | 'guc' | 'bot');
+    saveState(this.state, browserStorage());
+    this.balanceText.setText(`💰 ${this.state.rd} RD`);
+    this.floatText(it.x, 300, 'Aldın! +1', '#7CFC7C');
   }
 
   private floatText(x: number, y: number, msg: string, color: string): void {

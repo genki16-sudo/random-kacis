@@ -10,7 +10,7 @@ import { playChomp, playWhack, playApplause } from '../../audio/sfx';
 import { browserStorage, clearProgress } from '../../data/save';
 import {
   GameState, loadState, saveState, useMama as stateUseMama, HP_MAX,
-  currentGuc, applyGucMamasi, tickGucBuff, refillYP,
+  currentGuc, applyGucMamasi, tickGucBuff,
 } from '../../state/gameState';
 
 const RANDOM_MAX = HP_MAX; // 10, aynı sabit — kaynak state/gameState.ts
@@ -462,7 +462,7 @@ export class BattleScene extends Phaser.Scene {
     if (this.over) return;
     this.over = true;
     this.busy = true;
-    this.state = refillYP({ ...this.state, hp: this.randomHp });
+    this.state = { ...this.state, hp: this.randomHp };
     saveState(this.state, browserStorage());
     clearProgress(browserStorage());
     const cx = this.scale.width / 2;

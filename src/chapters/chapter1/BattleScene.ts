@@ -13,7 +13,6 @@ import {
   currentGuc, applyGucMamasi, tickGucBuff, addTP, POLICE_TP,
 } from '../../state/gameState';
 
-const RANDOM_MAX = HP_MAX; // 10, aynı sabit — kaynak state/gameState.ts
 const BOSS_MAX = 15;
 const POLICE_DMG = 1;
 const MAMA_HEAL = 3;
@@ -31,7 +30,7 @@ export class BattleScene extends Phaser.Scene {
   private state!: GameState;
   private mamaCountExplained = false;
   private bossHp = BOSS_MAX;
-  private randomHp = RANDOM_MAX;
+  private randomHp = HP_MAX;
   private bossHpFill!: Phaser.GameObjects.Rectangle;
   private bossHpText!: Phaser.GameObjects.Text;
   private randomHpFill!: Phaser.GameObjects.Rectangle;
@@ -462,6 +461,8 @@ export class BattleScene extends Phaser.Scene {
     if (this.over) return;
     this.over = true;
     this.busy = true;
+    const prevHpMax = this.state.hpMax;
+    const prevGuc = this.state.guc;
     this.state = addTP(this.state, POLICE_TP);
     this.state = { ...this.state, hp: this.state.hpMax };
     saveState(this.state, browserStorage());
@@ -480,11 +481,11 @@ export class BattleScene extends Phaser.Scene {
     this.tweens.addCounter({
       from: 0, to: 10, duration: 1400, delay: 500,
       onUpdate: (tw) => { tpText.setText(`TP: ${Math.round(tw.getValue() ?? 0)}`); },
-      onComplete: () => this.showLevelUp(cx),
+      onComplete: () => this.showLevelUp(cx, prevHpMax, prevGuc),
     });
   }
 
-  private showLevelUp(cx: number): void {
+  private showLevelUp(cx: number, prevHpMax: number, prevGuc: number): void {
     // Konfeti patlaması + alkış
     this.confettiBurst(cx, 200);
     playApplause();
@@ -496,12 +497,12 @@ export class BattleScene extends Phaser.Scene {
     this.tweens.add({ targets: lvl, scale: 1, duration: 400, ease: 'Back.easeOut' });
 
     this.time.delayedCall(600, () => {
-      this.add.text(cx, 320, 'Can  10 → 13', {
+      this.add.text(cx, 320, `Can  ${prevHpMax} → ${this.state.hpMax}`, {
         fontFamily: 'sans-serif', fontSize: '26px', color: '#7bffa0', fontStyle: 'bold',
       }).setOrigin(0.5);
     });
     this.time.delayedCall(1000, () => {
-      this.add.text(cx, 358, 'Atak  3 → 5', {
+      this.add.text(cx, 358, `Atak  ${prevGuc} → ${this.state.guc}`, {
         fontFamily: 'sans-serif', fontSize: '26px', color: '#ffb066', fontStyle: 'bold',
       }).setOrigin(0.5);
     });

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   newGameState, useMama, buy, canBuy,
-  canEquipBoots, equipBoots, unequipBoots, toggleBoots, levelUp,
+  canEquipBoots, equipBoots, unequipBoots, toggleBoots, gainYpBonus,
   applyGucMamasi, tickGucBuff, currentGuc, addTP,
   HP_MAX, YP_MAX, BITE_BASE, GUC_MAMASI_BONUS, YP_LEVEL_GAIN, POLICE_TP, loadState,
 } from '../src/state/gameState';
@@ -143,10 +143,10 @@ describe('güç maması + güç', () => {
   });
 });
 
-describe('levelUp', () => {
+describe('gainYpBonus', () => {
   it('raises ypMax and free yp by YP_LEVEL_GAIN', () => {
     const s = { ...newGameState(), yp: 2, ypMax: 5 }; // bot takılıyken gibi
-    const r = levelUp(s);
+    const r = gainYpBonus(s);
     expect(r.ypMax).toBe(5 + YP_LEVEL_GAIN);
     expect(r.yp).toBe(2 + YP_LEVEL_GAIN); // örn 5/8
   });

@@ -99,7 +99,7 @@ export function toggleBoots(s: GameState): GameState {
   return s.botEquipped ? unequipBoots(s) : equipBoots(s);
 }
 
-export function levelUp(s: GameState): GameState {
+export function gainYpBonus(s: GameState): GameState {
   return { ...s, ypMax: s.ypMax + YP_LEVEL_GAIN, yp: s.yp + YP_LEVEL_GAIN };
 }
 
@@ -128,6 +128,7 @@ export function loadState(storage: StorageBackend): GameState {
       botEquipped: p.botEquipped ?? p.botKullanildi ?? false,
     };
     merged.yp = Math.min(merged.yp, merged.ypMax);
+    merged.hp = Math.min(merged.hp, merged.hpMax);
     delete (merged as Partial<GameState> & { botKullanildi?: boolean }).botKullanildi;
     return merged;
   } catch {

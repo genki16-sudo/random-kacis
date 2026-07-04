@@ -88,7 +88,8 @@ docs/superpowers/       # tasarım spec'i ve Chapter 1 planı
 - **Kalıcı oyun durumu** (`state/gameState.ts`, localStorage): can, RD (Random Doları), YP (Yararlılık Puanı), eşyalar — saf mutasyonlar + testleri
 - **Envanter** (ESC / ENV butonu, orman-park): 💰 RD · ❤️ Can · ⚡ YP · 💪 Güç + eşyalar tablosu, tıkla-kullan
 - **Eşya etkileri:** Mama +3 can (savaş & dünya) · Güç Maması savaşta 2 tur +3 güç · Hız Botları 3 YP → kalıcı hız (BOOT_MULT)
-- **Savaşta "Geri" butonu** (tur harcamaz); can & mama artık kalıcı; YP savaş kazanınca dolar
+- **Savaşta "Geri" butonu** (tur harcamaz); can & mama artık kalıcı
+- **YP = Paper Mario BP mantığı:** equip'e harcanır (hız botu tak/çıkar, tak=−3 YP çıkar=+3), savaşta DOLMAZ, level atlayınca maks artar (Chapter 1 hariç); gösterim boş/maks (ör. 2/5). Spec/plan: `docs/superpowers/*/2026-07-05-yp-bp-equip*`
 - **Dükkan:** ilk girişte 100 RD hediye; **Çıkış** → parkta ilk seferde envanter/YP tanıtımı
 - Gizli test kodu: ana menüde enkisoft'a 10 tık → bölüm seç
 - Spec: `docs/superpowers/specs/2026-07-04-oyuncu-ilerleme-envanter-design.md`, plan: `docs/superpowers/plans/2026-07-04-oyuncu-ilerleme-envanter.md`

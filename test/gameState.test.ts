@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import {
-  newGameState, useMama, buy, canBuy, useBoots, canUseBoots,
-  applyGucMamasi, tickGucBuff, refillYP, currentGuc,
-  HP_MAX, YP_MAX, BITE_BASE, GUC_MAMASI_BONUS,
+  newGameState, useMama, buy, canBuy,
+  canEquipBoots, equipBoots, unequipBoots, toggleBoots, levelUp,
+  applyGucMamasi, tickGucBuff, currentGuc,
+  HP_MAX, YP_MAX, BITE_BASE, GUC_MAMASI_BONUS, YP_LEVEL_GAIN, loadState,
 } from '../src/state/gameState';
 
 describe('newGameState', () => {
-  it('has correct starting values', () => {
-    const s = newGameState();
-    expect(s).toEqual({
-      hp: 10, rd: 0, yp: 5, gucBuffTurns: 0, mama: 10, gucMamasi: 0,
-      botVar: false, botKullanildi: false, tutorialDone: false,
+  it('has correct starting values incl. ypMax and botEquipped', () => {
+    expect(newGameState()).toEqual({
+      hp: 10, rd: 0, yp: 5, ypMax: 5, gucBuffTurns: 0, mama: 10, gucMamasi: 0,
+      botVar: false, botEquipped: false, tutorialDone: false,
     });
   });
 });
@@ -47,18 +47,33 @@ describe('buy', () => {
   });
 });
 
-describe('useBoots', () => {
-  it('spends YP and activates when owned and enough YP', () => {
+describe('bot equip/unequip', () => {
+  it('equip spends YP and marks equipped', () => {
     const s = { ...newGameState(), botVar: true, yp: 5 };
-    expect(canUseBoots(s)).toBe(true);
-    const r = useBoots(s);
+    expect(canEquipBoots(s)).toBe(true);
+    const r = equipBoots(s);
     expect(r.yp).toBe(2);
-    expect(r.botKullanildi).toBe(true);
+    expect(r.botEquipped).toBe(true);
   });
-  it('cannot use without enough YP or already used', () => {
-    expect(canUseBoots({ ...newGameState(), botVar: true, yp: 2 })).toBe(false);
-    expect(canUseBoots({ ...newGameState(), botVar: true, yp: 5, botKullanildi: true })).toBe(false);
-    expect(canUseBoots({ ...newGameState(), botVar: false, yp: 5 })).toBe(false);
+  it('unequip refunds YP and clears equipped', () => {
+    const s = { ...newGameState(), botVar: true, yp: 2, botEquipped: true };
+    const r = unequipBoots(s);
+    expect(r.yp).toBe(5);
+    expect(r.botEquipped).toBe(false);
+  });
+  it('toggle equips then unequips', () => {
+    const s = { ...newGameState(), botVar: true, yp: 5 };
+    const eq = toggleBoots(s);
+    expect(eq.botEquipped).toBe(true);
+    expect(eq.yp).toBe(2);
+    const un = toggleBoots(eq);
+    expect(un.botEquipped).toBe(false);
+    expect(un.yp).toBe(5);
+  });
+  it('cannot equip without ownership or enough YP', () => {
+    expect(canEquipBoots({ ...newGameState(), botVar: false, yp: 5 })).toBe(false);
+    expect(canEquipBoots({ ...newGameState(), botVar: true, yp: 2 })).toBe(false);
+    expect(canEquipBoots({ ...newGameState(), botVar: true, yp: 5, botEquipped: true })).toBe(false);
   });
 });
 
@@ -81,8 +96,32 @@ describe('güç maması + güç', () => {
   });
 });
 
-describe('refillYP', () => {
-  it('sets yp to YP_MAX', () => {
-    expect(refillYP({ ...newGameState(), yp: 1 }).yp).toBe(YP_MAX);
+describe('levelUp', () => {
+  it('raises ypMax and free yp by YP_LEVEL_GAIN', () => {
+    const s = { ...newGameState(), yp: 2, ypMax: 5 }; // bot takılıyken gibi
+    const r = levelUp(s);
+    expect(r.ypMax).toBe(5 + YP_LEVEL_GAIN);
+    expect(r.yp).toBe(2 + YP_LEVEL_GAIN); // örn 5/8
+  });
+});
+
+describe('loadState migration', () => {
+  it('migrates old botKullanildi and missing ypMax', () => {
+    const storage = {
+      getItem: () => JSON.stringify({ hp: 7, rd: 20, yp: 2, mama: 3, botVar: true, botKullanildi: true }),
+      setItem: () => {}, removeItem: () => {},
+    };
+    const s = loadState(storage);
+    expect(s.ypMax).toBe(YP_MAX);          // eksik -> 5
+    expect(s.botEquipped).toBe(true);      // eski botKullanildi taşındı
+    expect(s.yp).toBe(2);
+    expect('botKullanildi' in s).toBe(false);
+  });
+  it('clamps yp to ypMax', () => {
+    const storage = {
+      getItem: () => JSON.stringify({ yp: 9, ypMax: 5 }),
+      setItem: () => {}, removeItem: () => {},
+    };
+    expect(loadState(storage).yp).toBe(5);
   });
 });

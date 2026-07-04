@@ -8,6 +8,7 @@ export const GUC_MAMASI_BONUS = 3;
 export const GUC_MAMASI_TURNS = 2;
 export const BOT_YP_COST = 3;
 export const BOOT_MULT = 1.6;
+export const YP_LEVEL_GAIN = 3;
 export const PRICES: Record<ItemKey, number> = { mama: 5, guc: 10, bot: 50 };
 
 export type ItemKey = 'mama' | 'guc' | 'bot';
@@ -16,11 +17,12 @@ export interface GameState {
   hp: number;
   rd: number;
   yp: number;
+  ypMax: number;
   gucBuffTurns: number;
   mama: number;
   gucMamasi: number;
   botVar: boolean;
-  botKullanildi: boolean;
+  botEquipped: boolean;
   tutorialDone: boolean;
 }
 
@@ -28,8 +30,8 @@ const STATE_KEY = 'random-kacis-state';
 
 export function newGameState(): GameState {
   return {
-    hp: HP_MAX, rd: 0, yp: YP_MAX, gucBuffTurns: 0, mama: 10, gucMamasi: 0,
-    botVar: false, botKullanildi: false, tutorialDone: false,
+    hp: HP_MAX, rd: 0, yp: YP_MAX, ypMax: YP_MAX, gucBuffTurns: 0, mama: 10, gucMamasi: 0,
+    botVar: false, botEquipped: false, tutorialDone: false,
   };
 }
 
@@ -56,13 +58,26 @@ export function buy(s: GameState, key: ItemKey): GameState {
   return { ...s, rd, botVar: true };
 }
 
-export function canUseBoots(s: GameState): boolean {
-  return s.botVar && !s.botKullanildi && s.yp >= BOT_YP_COST;
+export function canEquipBoots(s: GameState): boolean {
+  return s.botVar && !s.botEquipped && s.yp >= BOT_YP_COST;
 }
 
-export function useBoots(s: GameState): GameState {
-  if (!canUseBoots(s)) return s;
-  return { ...s, yp: s.yp - BOT_YP_COST, botKullanildi: true };
+export function equipBoots(s: GameState): GameState {
+  if (!canEquipBoots(s)) return s;
+  return { ...s, yp: s.yp - BOT_YP_COST, botEquipped: true };
+}
+
+export function unequipBoots(s: GameState): GameState {
+  if (!s.botEquipped) return s;
+  return { ...s, yp: s.yp + BOT_YP_COST, botEquipped: false };
+}
+
+export function toggleBoots(s: GameState): GameState {
+  return s.botEquipped ? unequipBoots(s) : equipBoots(s);
+}
+
+export function levelUp(s: GameState): GameState {
+  return { ...s, ypMax: s.ypMax + YP_LEVEL_GAIN, yp: s.yp + YP_LEVEL_GAIN };
 }
 
 export function applyGucMamasi(s: GameState): GameState {
@@ -74,10 +89,6 @@ export function tickGucBuff(s: GameState): GameState {
   return { ...s, gucBuffTurns: Math.max(0, s.gucBuffTurns - 1) };
 }
 
-export function refillYP(s: GameState): GameState {
-  return { ...s, yp: YP_MAX };
-}
-
 export function saveState(s: GameState, storage: StorageBackend): void {
   storage.setItem(STATE_KEY, JSON.stringify(s));
 }
@@ -86,8 +97,16 @@ export function loadState(storage: StorageBackend): GameState {
   const raw = storage.getItem(STATE_KEY);
   if (raw === null) return newGameState();
   try {
-    const p = JSON.parse(raw) as Partial<GameState>;
-    return { ...newGameState(), ...p };
+    const p = JSON.parse(raw) as Partial<GameState> & { botKullanildi?: boolean };
+    const merged: GameState = {
+      ...newGameState(),
+      ...p,
+      ypMax: typeof p.ypMax === 'number' ? p.ypMax : YP_MAX,
+      botEquipped: p.botEquipped ?? p.botKullanildi ?? false,
+    };
+    merged.yp = Math.min(merged.yp, merged.ypMax);
+    delete (merged as Partial<GameState> & { botKullanildi?: boolean }).botKullanildi;
+    return merged;
   } catch {
     return newGameState();
   }

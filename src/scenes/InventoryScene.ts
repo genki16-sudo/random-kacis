@@ -2,8 +2,8 @@ import Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { browserStorage } from '../data/save';
 import {
-  GameState, loadState, saveState, useMama, useBoots, canUseBoots,
-  currentGuc, HP_MAX, YP_MAX,
+  GameState, loadState, saveState, useMama, toggleBoots, canEquipBoots,
+  currentGuc, HP_MAX,
 } from '../state/gameState';
 
 interface InvData { resumeKey: string; }
@@ -39,7 +39,7 @@ export class InventoryScene extends Phaser.Scene {
 
   private refreshInfo(): void {
     const s = this.state;
-    this.info.setText(`💰 ${s.rd} RD    ❤️ Can ${s.hp}/${HP_MAX}    ⚡ YP ${s.yp}/${YP_MAX}    💪 Güç ${currentGuc(s)}`);
+    this.info.setText(`💰 ${s.rd} RD    ❤️ Can ${s.hp}/${HP_MAX}    ⚡ YP ${s.yp}/${s.ypMax}    💪 Güç ${currentGuc(s)}`);
   }
 
   private buildRows(): void {
@@ -50,7 +50,7 @@ export class InventoryScene extends Phaser.Scene {
     const defs = [
       { label: `🦴 Mama ×${s.mama}`, onUse: () => this.doUseMama() },
       { label: `🔴 Güç Maması ×${s.gucMamasi}`, onUse: () => this.flash('Bu eşya savaşta kullanılır') },
-      { label: `👢 Hız Botları ${s.botVar ? (s.botKullanildi ? '(kullanıldı)' : '(hazır)') : '(yok)'}`, onUse: () => this.doUseBoots() },
+      { label: `👢 Hız Botları ${s.botVar ? (s.botEquipped ? '(takılı)' : '(hazır)') : '(yok)'}`, onUse: () => this.doToggleBoots() },
     ];
     defs.forEach((d, i) => {
       const c = this.makeButton(cx, 200 + i * 64, d.label, d.onUse);
@@ -66,14 +66,14 @@ export class InventoryScene extends Phaser.Scene {
     this.flash('Can +3 ❤️');
   }
 
-  private doUseBoots(): void {
+  private doToggleBoots(): void {
     if (!this.state.botVar) { this.flash('Önce dükkandan al'); return; }
-    if (this.state.botKullanildi) { this.flash('Zaten kullandın'); return; }
-    if (!canUseBoots(this.state)) { this.flash('YP yetersiz (3 gerekir)'); return; }
-    this.state = useBoots(this.state);
+    if (!this.state.botEquipped && !canEquipBoots(this.state)) { this.flash('YP yetersiz (3 gerekir)'); return; }
+    const wasEquipped = this.state.botEquipped;
+    this.state = toggleBoots(this.state);
     saveState(this.state, browserStorage());
     this.refreshInfo(); this.buildRows();
-    this.flash('Hız botları aktif! Artık daha hızlısın 👢');
+    this.flash(wasEquipped ? 'Botları çıkardın (YP geri geldi)' : 'Hız botları takıldı! 👢');
   }
 
   private flash(msg: string): void {

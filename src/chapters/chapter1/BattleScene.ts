@@ -23,6 +23,7 @@ export class BattleScene extends Phaser.Scene {
   private bubble?: Phaser.GameObjects.Container;
   private menu?: Phaser.GameObjects.Container;
   private list?: Phaser.GameObjects.Container;
+  private backBtn?: Phaser.GameObjects.Container;
   private healTutorialShown = false;
   private itemsUnlocked = false;
   private state!: GameState;
@@ -181,6 +182,7 @@ export class BattleScene extends Phaser.Scene {
     this.menu = undefined;
     this.setBubble('ISIRMA saldırısına dokun!');
     this.list = this.makeListItem('Isırma', () => this.performBite());
+    this.showBackButton();
   }
 
   private showItemList(): void {
@@ -196,6 +198,29 @@ export class BattleScene extends Phaser.Scene {
       this.bubble?.destroy();
       this.bubble = undefined;
     }
+    this.showBackButton();
+  }
+
+  private showBackButton(): void {
+    const W = this.scale.width;
+    const bg = this.add.rectangle(0, 0, 120, 44, 0x2a2036).setStrokeStyle(2, 0x8888aa);
+    const txt = this.add.text(0, 0, '← Geri', {
+      fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff',
+    }).setOrigin(0.5);
+    const c = this.add.container(W / 2, 410, [bg, txt]);
+    c.setSize(120, 44);
+    c.setInteractive({ useHandCursor: true });
+    c.on('pointerup', () => {
+      if (this.busy) return;
+      this.list?.destroy();
+      this.list = undefined;
+      this.bubble?.destroy();
+      this.bubble = undefined;
+      c.destroy();
+      this.backBtn = undefined;
+      this.showMenu();
+    });
+    this.backBtn = c;
   }
 
   private makeListItem(label: string, onPick: () => void): Phaser.GameObjects.Container {
@@ -219,6 +244,8 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     this.busy = true;
+    this.backBtn?.destroy();
+    this.backBtn = undefined;
     this.list?.destroy();
     this.list = undefined;
     this.bubble?.destroy();
@@ -257,6 +284,8 @@ export class BattleScene extends Phaser.Scene {
 
   private performBite(): void {
     this.busy = true;
+    this.backBtn?.destroy();
+    this.backBtn = undefined;
     this.list?.destroy();
     this.list = undefined;
     this.bubble?.destroy();

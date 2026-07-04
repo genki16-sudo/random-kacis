@@ -91,6 +91,8 @@ docs/superpowers/       # tasarım spec'i ve Chapter 1 planı
 - **Savaşta "Geri" butonu** (tur harcamaz); can & mama artık kalıcı
 - **YP = Paper Mario BP mantığı:** equip'e harcanır (hız botu tak/çıkar, tak=−3 YP çıkar=+3), savaşta DOLMAZ, level atlayınca maks artar (Chapter 1 hariç); gösterim boş/maks (ör. 2/5). Spec/plan: `docs/superpowers/*/2026-07-05-yp-bp-equip*`
 - **Dükkan:** ilk girişte 100 RD hediye; **Çıkış** → parkta ilk seferde envanter/YP tanıtımı
+- **TP/Level sistemi:** düşman TP verir (polis 10 TP) → eşik dolunca level atlar → o level'ın stat artışı uygulanır (`LEVELS` tablosu). Chapter 1 sonu: level 2 → Can 10→13, Güç 3→5 (gerçek, kalıcı) + tam iyileşme. Envanterde Seviye/TP + Can/hpMax + eşya YP maliyeti gösterilir. `addTP()` saf fonksiyon + testleri.
+- **Yeni Oyun** artık oyuncu durumunu da tam sıfırlar (eşyalar/can/RD/YP/TP/level)
 - Gizli test kodu: ana menüde enkisoft'a 10 tık → bölüm seç
 - Spec: `docs/superpowers/specs/2026-07-04-oyuncu-ilerleme-envanter-design.md`, plan: `docs/superpowers/plans/2026-07-04-oyuncu-ilerleme-envanter.md`
 

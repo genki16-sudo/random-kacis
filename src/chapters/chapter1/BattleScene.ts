@@ -10,7 +10,7 @@ import { playChomp, playWhack, playApplause } from '../../audio/sfx';
 import { browserStorage, clearProgress } from '../../data/save';
 import {
   GameState, loadState, saveState, useMama as stateUseMama, HP_MAX,
-  currentGuc, applyGucMamasi, tickGucBuff,
+  currentGuc, applyGucMamasi, tickGucBuff, addTP, POLICE_TP,
 } from '../../state/gameState';
 
 const RANDOM_MAX = HP_MAX; // 10, aynı sabit — kaynak state/gameState.ts
@@ -82,7 +82,7 @@ export class BattleScene extends Phaser.Scene {
     this.boss = drawPolice(this, this.bossHomeX, 300, true, 1.6);
 
     // Can barları
-    const randomBar = this.makeHpBar(40, 96, 'Random', 0x43c743, RANDOM_MAX);
+    const randomBar = this.makeHpBar(40, 96, 'Random', 0x43c743, this.state.hpMax);
     this.randomHpFill = randomBar.fill;
     this.randomHpText = randomBar.text;
     const bossBar = this.makeHpBar(W - 40 - BAR_W, 96, 'Polis', 0xff5555, BOSS_MAX);
@@ -258,17 +258,17 @@ export class BattleScene extends Phaser.Scene {
 
     const before = this.randomHp;
     this.state = stateUseMama(this.state); // mama--, state.hp cap'li
-    this.randomHp = Math.min(RANDOM_MAX, this.randomHp + MAMA_HEAL);
+    this.randomHp = Math.min(this.state.hpMax, this.randomHp + MAMA_HEAL);
     this.state = { ...this.state, hp: this.randomHp };
     saveState(this.state, browserStorage());
     const gain = this.randomHp - before;
 
     this.tweens.add({
       targets: this.randomHpFill,
-      width: (BAR_W - 4) * (this.randomHp / RANDOM_MAX),
+      width: (BAR_W - 4) * (this.randomHp / this.state.hpMax),
       duration: 300,
     });
-    this.randomHpText.setText(`${this.randomHp}/${RANDOM_MAX}`);
+    this.randomHpText.setText(`${this.randomHp}/${this.state.hpMax}`);
 
     // Random mamayı yer (mutlu zıplama)
     playChomp();
@@ -410,10 +410,10 @@ export class BattleScene extends Phaser.Scene {
     saveState(this.state, browserStorage());
     this.tweens.add({
       targets: this.randomHpFill,
-      width: (BAR_W - 4) * (this.randomHp / RANDOM_MAX),
+      width: (BAR_W - 4) * (this.randomHp / this.state.hpMax),
       duration: 300,
     });
-    this.randomHpText.setText(`${this.randomHp}/${RANDOM_MAX}`);
+    this.randomHpText.setText(`${this.randomHp}/${this.state.hpMax}`);
     this.floatDamage(this.hero.x, this.hero.y - 80, POLICE_DMG);
 
     this.time.delayedCall(500, () => {
@@ -462,7 +462,8 @@ export class BattleScene extends Phaser.Scene {
     if (this.over) return;
     this.over = true;
     this.busy = true;
-    this.state = { ...this.state, hp: this.randomHp };
+    this.state = addTP(this.state, POLICE_TP);
+    this.state = { ...this.state, hp: this.state.hpMax };
     saveState(this.state, browserStorage());
     clearProgress(browserStorage());
     const cx = this.scale.width / 2;

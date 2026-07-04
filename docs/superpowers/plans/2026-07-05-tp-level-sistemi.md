@@ -211,10 +211,10 @@ git commit -m "feat(battle): kazanınca addTP(+10) → level 2 stat artışı + 
 - Modify: `src/scenes/InventoryScene.ts`
 
 **Interfaces:**
-- Consumes: `currentGuc` (mevcut). `HP_MAX` importu artık gerekmez (s.hpMax kullanılır).
+- Consumes: `currentGuc`, `BOT_YP_COST` (mevcut gameState). `HP_MAX` importu artık gerekmez (s.hpMax kullanılır).
 
 Değişiklikler:
-1. Import'tan `HP_MAX`'ı çıkar (artık `s.hpMax` kullanılacak).
+1. Import: `HP_MAX`'ı çıkar; `BOT_YP_COST` ekle (bot satırında YP maliyetini yazmak için). Yani `../state/gameState` importuna `BOT_YP_COST` dahil et.
 2. `refreshInfo()`'yu güncelle (Seviye/TP satırı + dinamik can):
 ```ts
 private refreshInfo(): void {
@@ -226,6 +226,16 @@ private refreshInfo(): void {
 }
 ```
 > `this.info` metni artık iki satır; `setOrigin(0.5)` ve `align:'center'` zaten var (create'te info `align` yoksa ekle: `align:'center'`). Konum uygunsa dokunma; gerekiyorsa `info` y'sini biraz yukarı al (ör. 96 → 90) ki iki satır sığsın.
+3. `buildRows()`'ta **bot satırına YP maliyetini** ekle (equip'e ne kadar YP gerektiğini göster). Mevcut bot satırı etiketini şununla değiştir:
+```ts
+{ label: `👢 Hız Botları (${BOT_YP_COST} YP) ${s.botVar ? (s.botEquipped ? '· takılı' : '· hazır') : '· yok'}`, onUse: () => this.doToggleBoots() },
+```
+> Böylece "👢 Hız Botları (3 YP) · hazır" görünür. İleride başka equip'li güçler eklenince aynı biçimde kendi YP maliyetini yazar.
+
+**Chapter 1 level-up statları (Can/Güç) envanterde:** Bu görevdeki `refreshInfo` zaten
+`❤️ Can x/hpMax` ve `💪 Güç currentGuc(s)` gösteriyor; Task 1/2 ile Chapter 1 sonrası
+`hpMax=13`, `guc=5` olacağı için envanter otomatik "Can x/13" ve "Güç 5" gösterir. Ekstra
+alan gerekmez — E2E'de bunu doğrula.
 
 - [ ] **Step 1: Apply edits.**
 - [ ] **Step 2: Build** — `npm run build` → `✓ built`.

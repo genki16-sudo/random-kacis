@@ -22,8 +22,9 @@ export class ParkScene extends Phaser.Scene {
 
   create(): void {
     this.phase = 'walk';
-    addGradientBg(this, 0x6fa9d6, 0x3a6b8f);
-    addFloor(this, 300, 0x4c9a4c);
+    // Gökyüzü + zemin kameraya sabit: dünya ekrandan geniş, kaydırınca siyah kalmasın
+    addGradientBg(this, 0x6fa9d6, 0x3a6b8f).setScrollFactor(0);
+    addFloor(this, 300, 0x4c9a4c).setScrollFactor(0);
     fadeIn(this);
 
     // Köpek kulübeleri (ağaç yerine)

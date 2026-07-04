@@ -22,8 +22,9 @@ export class ForestScene extends Phaser.Scene {
 
   create(): void {
     this.leaving = false;
-    addGradientBg(this, 0x4a7f5a, 0x1c3324);
-    addFloor(this, 300, 0x2c5233);
+    // Gökyüzü + zemin kameraya sabit: dünya ekrandan geniş, kaydırınca siyah kalmasın
+    addGradientBg(this, 0x4a7f5a, 0x1c3324).setScrollFactor(0);
+    addFloor(this, 300, 0x2c5233).setScrollFactor(0);
     fadeIn(this);
 
     // Uzak ağaç şeridi (parallax — kamerayla yavaş kayar)

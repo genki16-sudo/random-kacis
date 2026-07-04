@@ -2,16 +2,56 @@ import { describe, it, expect } from 'vitest';
 import {
   newGameState, useMama, buy, canBuy,
   canEquipBoots, equipBoots, unequipBoots, toggleBoots, levelUp,
-  applyGucMamasi, tickGucBuff, currentGuc,
-  HP_MAX, YP_MAX, BITE_BASE, GUC_MAMASI_BONUS, YP_LEVEL_GAIN, loadState,
+  applyGucMamasi, tickGucBuff, currentGuc, addTP,
+  HP_MAX, YP_MAX, BITE_BASE, GUC_MAMASI_BONUS, YP_LEVEL_GAIN, POLICE_TP, loadState,
 } from '../src/state/gameState';
 
 describe('newGameState', () => {
-  it('has correct starting values incl. ypMax and botEquipped', () => {
+  it('has correct starting values incl. tp/level/hpMax/guc', () => {
     expect(newGameState()).toEqual({
       hp: 10, rd: 0, yp: 5, ypMax: 5, gucBuffTurns: 0, mama: 10, gucMamasi: 0,
       botVar: false, botEquipped: false, tutorialDone: false,
+      tp: 0, level: 1, hpMax: 10, guc: 3,
     });
+  });
+});
+
+describe('addTP / level', () => {
+  it('below threshold: only tp rises, no level change', () => {
+    const r = addTP({ ...newGameState() }, 5);
+    expect(r.tp).toBe(5);
+    expect(r.level).toBe(1);
+    expect(r.hpMax).toBe(10);
+    expect(r.guc).toBe(3);
+  });
+  it('reaching 10 TP levels to 2 and applies gains', () => {
+    const r = addTP({ ...newGameState() }, POLICE_TP);
+    expect(r.tp).toBe(10);
+    expect(r.level).toBe(2);
+    expect(r.hpMax).toBe(13); // +3
+    expect(r.guc).toBe(5);    // +2
+  });
+  it('does not re-apply an already-reached level', () => {
+    const once = addTP({ ...newGameState() }, 10);
+    const twice = addTP(once, 10); // tp 20 ama level 2 zaten alındı
+    expect(twice.tp).toBe(20);
+    expect(twice.level).toBe(2);
+    expect(twice.hpMax).toBe(13);
+    expect(twice.guc).toBe(5);
+  });
+});
+
+describe('currentGuc uses base guc', () => {
+  it('is s.guc without buff, +bonus with buff', () => {
+    expect(currentGuc({ ...newGameState(), guc: 5 })).toBe(5);
+    expect(currentGuc({ ...newGameState(), guc: 5, gucBuffTurns: 2 })).toBe(5 + GUC_MAMASI_BONUS);
+  });
+});
+
+describe('useMama caps at hpMax', () => {
+  it('respects dynamic hpMax', () => {
+    const s = { ...newGameState(), hpMax: 13, hp: 12, mama: 1 };
+    expect(useMama(s).hp).toBe(13); // 12+3 capped at 13
   });
 });
 

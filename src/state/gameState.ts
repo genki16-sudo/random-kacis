@@ -13,6 +13,13 @@ export const PRICES: Record<ItemKey, number> = { mama: 5, guc: 10, bot: 50 };
 
 export type ItemKey = 'mama' | 'guc' | 'bot';
 
+export const POLICE_TP = 10;
+
+export interface LevelDef { level: number; tpNeeded: number; hp: number; guc: number; }
+export const LEVELS: LevelDef[] = [
+  { level: 2, tpNeeded: 10, hp: 3, guc: 2 },
+];
+
 export interface GameState {
   hp: number;
   rd: number;
@@ -24,6 +31,10 @@ export interface GameState {
   botVar: boolean;
   botEquipped: boolean;
   tutorialDone: boolean;
+  tp: number;
+  level: number;
+  hpMax: number;
+  guc: number;
 }
 
 const STATE_KEY = 'random-kacis-state';
@@ -32,16 +43,27 @@ export function newGameState(): GameState {
   return {
     hp: HP_MAX, rd: 0, yp: YP_MAX, ypMax: YP_MAX, gucBuffTurns: 0, mama: 10, gucMamasi: 0,
     botVar: false, botEquipped: false, tutorialDone: false,
+    tp: 0, level: 1, hpMax: HP_MAX, guc: BITE_BASE,
   };
 }
 
 export function currentGuc(s: GameState): number {
-  return BITE_BASE + (s.gucBuffTurns > 0 ? GUC_MAMASI_BONUS : 0);
+  return s.guc + (s.gucBuffTurns > 0 ? GUC_MAMASI_BONUS : 0);
 }
 
 export function useMama(s: GameState): GameState {
   if (s.mama <= 0) return s;
-  return { ...s, mama: s.mama - 1, hp: Math.min(HP_MAX, s.hp + MAMA_HEAL) };
+  return { ...s, mama: s.mama - 1, hp: Math.min(s.hpMax, s.hp + MAMA_HEAL) };
+}
+
+export function addTP(s: GameState, amount: number): GameState {
+  let ns: GameState = { ...s, tp: s.tp + amount };
+  for (const def of LEVELS) {
+    if (ns.level < def.level && ns.tp >= def.tpNeeded) {
+      ns = { ...ns, level: def.level, hpMax: ns.hpMax + def.hp, guc: ns.guc + def.guc };
+    }
+  }
+  return ns;
 }
 
 export function canBuy(s: GameState, key: ItemKey): boolean {

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   newGameState, useMama, buy, canBuy,
   canEquipBoots, equipBoots, unequipBoots, toggleBoots, gainYpBonus,
-  applyGucMamasi, tickGucBuff, currentGuc, addTP,
+  applyGucMamasi, tickGucBuff, currentGuc, addTP, tpToNext,
   HP_MAX, YP_MAX, BITE_BASE, GUC_MAMASI_BONUS, YP_LEVEL_GAIN, POLICE_TP, loadState,
 } from '../src/state/gameState';
 
@@ -38,6 +38,23 @@ describe('addTP / level', () => {
     expect(twice.level).toBe(2);
     expect(twice.hpMax).toBe(13);
     expect(twice.guc).toBe(5);
+  });
+  it('full-heals hp on level up', () => {
+    const r = addTP({ ...newGameState(), hp: 2 }, 10); // level 2 -> hpMax 13
+    expect(r.hp).toBe(13);
+  });
+  it('does not heal when no level gained', () => {
+    expect(addTP({ ...newGameState(), hp: 4 }, 5).hp).toBe(4);
+  });
+});
+
+describe('tpToNext', () => {
+  it('returns remaining TP to next level', () => {
+    expect(tpToNext({ ...newGameState() })).toBe(10);
+    expect(tpToNext({ ...newGameState(), tp: 7 })).toBe(3);
+  });
+  it('returns null at max defined level', () => {
+    expect(tpToNext({ ...newGameState(), level: 2, tp: 10 })).toBeNull();
   });
 });
 

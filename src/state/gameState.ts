@@ -63,7 +63,14 @@ export function addTP(s: GameState, amount: number): GameState {
       ns = { ...ns, level: def.level, hpMax: ns.hpMax + def.hp, guc: ns.guc + def.guc };
     }
   }
+  if (ns.level > s.level) ns = { ...ns, hp: ns.hpMax }; // her level up'ta tam iyileşme
   return ns;
+}
+
+/** Sonraki seviyeye kalan TP; tanımlı sonraki seviye yoksa (son seviye) null. */
+export function tpToNext(s: GameState): number | null {
+  const next = LEVELS.find((d) => d.level > s.level);
+  return next ? Math.max(0, next.tpNeeded - s.tp) : null;
 }
 
 export function canBuy(s: GameState, key: ItemKey): boolean {

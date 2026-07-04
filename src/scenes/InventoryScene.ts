@@ -3,7 +3,7 @@ import { SceneKeys } from './keys';
 import { browserStorage } from '../data/save';
 import {
   GameState, loadState, saveState, useMama, toggleBoots, canEquipBoots,
-  currentGuc, BOT_YP_COST,
+  currentGuc, BOT_YP_COST, tpToNext,
 } from '../state/gameState';
 
 interface InvData { resumeKey: string; }
@@ -39,9 +39,13 @@ export class InventoryScene extends Phaser.Scene {
 
   private refreshInfo(): void {
     const s = this.state;
+    const kalan = tpToNext(s);
+    const tpSatiri = kalan === null
+      ? `🏅 Seviye ${s.level}    ·    ⭐ TP ${s.tp}  (son seviye)`
+      : `🏅 Seviye ${s.level}    ·    ⭐ TP ${s.tp}  (sonraki seviyeye ${kalan} TP)`;
     this.info.setText(
       `💰 ${s.rd} RD    ❤️ Can ${s.hp}/${s.hpMax}    ⚡ YP ${s.yp}/${s.ypMax}    💪 Güç ${currentGuc(s)}\n` +
-      `🏅 Seviye ${s.level}    ·    ⭐ TP ${s.tp}`
+      tpSatiri
     );
   }
 

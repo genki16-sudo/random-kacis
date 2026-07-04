@@ -88,7 +88,12 @@ export class TitleScene extends Phaser.Scene {
     jumps.forEach(([label, key], i) => {
       const bx = cx + (i % 2 === 0 ? -130 : 130);
       const by = 130 + Math.floor(i / 2) * 74;
-      layer.add(this.makeButton(bx, by, label, () => changeScene(this, key)));
+      layer.add(this.makeButton(bx, by, label, () => {
+        // Gizli kod = Yeni Oyun gibi: durumu sıfırla, sonra seçilen sahneden başla
+        clearProgress(browserStorage());
+        saveState(newGameState(), browserStorage());
+        changeScene(this, key);
+      }));
     });
 
     layer.add(this.makeButton(cx, 130 + 3 * 74, 'Kapat', () => layer.destroy()));

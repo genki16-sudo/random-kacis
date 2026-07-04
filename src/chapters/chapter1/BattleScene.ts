@@ -463,8 +463,7 @@ export class BattleScene extends Phaser.Scene {
     this.busy = true;
     const prevHpMax = this.state.hpMax;
     const prevGuc = this.state.guc;
-    this.state = addTP(this.state, POLICE_TP);
-    this.state = { ...this.state, hp: this.state.hpMax };
+    this.state = addTP(this.state, POLICE_TP); // level atlarsa can tam dolar (addTP içinde)
     saveState(this.state, browserStorage());
     clearProgress(browserStorage());
     const cx = this.scale.width / 2;

@@ -307,9 +307,9 @@ export class BattleScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.tweens.add({ targets: t, y: t.y - 40, alpha: 0, duration: 1000, onComplete: () => t.destroy() });
 
+    // Not: güç mamasının kullanıldığı tur tick'lenmez; buff yalnızca
+    // ısırma turlarında (doBiteHit) azalır → tam 2 güçlü ısırma.
     this.time.delayedCall(1000, () => {
-      this.state = tickGucBuff(this.state);
-      saveState(this.state, browserStorage());
       if (this.bossHp <= 0) { this.win(); return; }
       this.policeTurn();
     });

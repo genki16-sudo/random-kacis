@@ -42,11 +42,15 @@ export class ChapterIntroScene extends Phaser.Scene {
 
     const go = () => {
       if (this.advanced) return;
+      // Fade-in bitmeden geçme: changeScene fade çalışırken no-op döner; erken
+      // dokunuşta advanced=true yapıp kalıcı takılmayı önle (dokunuşu yok say).
+      if (this.cameras.main.fadeEffect.isRunning) return;
       this.advanced = true;
       changeScene(this, this.next);
     };
-    this.input.once('pointerup', go);
-    this.input.keyboard?.once('keydown-SPACE', go);
+    // once yerine on: fade sırasındaki (yok sayılan) dokunuş dinleyiciyi tüketmesin
+    this.input.on('pointerup', go);
+    this.input.keyboard?.on('keydown-SPACE', go);
     this.time.delayedCall(2600, go);
   }
 }

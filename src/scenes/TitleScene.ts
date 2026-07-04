@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SceneKeys } from './keys';
 import { browserStorage, hasSave, loadProgress, clearProgress } from '../data/save';
+import { newGameState, saveState } from '../state/gameState';
 import { drawCharacter } from '../ui/drawCharacter';
 import { addGradientBg, addFloor } from '../ui/scenery';
 import { fadeIn, changeScene } from '../ui/transition';
@@ -29,7 +30,8 @@ export class TitleScene extends Phaser.Scene {
     this.tweens.add({ targets: hero, y: hero.y - 10, duration: 900, ease: 'Sine.easeInOut', yoyo: true, repeat: -1 });
 
     this.makeButton(cx, 300, 'Yeni Oyun', () => {
-      clearProgress(storage);
+      clearProgress(storage);                       // ilerleme kaydı (sahne/chapter)
+      saveState(newGameState(), storage);           // oyuncu durumu: can/RD/YP/eşyalar SIFIRLA
       changeScene(this, SceneKeys.ChapterIntro, { title: 'Chapter 1: Kaçış', next: SceneKeys.Cutscene });
     });
 

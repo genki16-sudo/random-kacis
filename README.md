@@ -81,10 +81,20 @@ docs/superpowers/       # tasarım spec'i ve Chapter 1 planı
 - **ParkScene:** köpek kulübeleri + dükkan → "Aaa dükkan! Haydi bir bakalım" → içeri → "Devamı yakında…" → menü
 - Saf mantık modülleri: `logic/follow.ts` (takip izi), `logic/depth.ts` (derinlik) + testleri
 - Chapter 1 savaş sonu kartı Chapter 2'ye bağlandı
+- **Dükkan içi (ShopScene):** tezgah + şeritli şapkalı/kıyafetli dükkancı köpek; tezgahta Mama (5 RD), Güç Maması (10 RD), Hız Botları (50 RD); satın alma
 - Spec: `docs/superpowers/specs/2026-07-03-chapter2-design.md`, plan: `docs/superpowers/plans/2026-07-03-chapter2.md`
 
+### ✅ Tamamlananlar (Oyuncu İlerleme Sistemi)
+- **Kalıcı oyun durumu** (`state/gameState.ts`, localStorage): can, RD (Random Doları), YP (Yararlılık Puanı), eşyalar — saf mutasyonlar + testleri
+- **Envanter** (ESC / ENV butonu, orman-park): 💰 RD · ❤️ Can · ⚡ YP · 💪 Güç + eşyalar tablosu, tıkla-kullan
+- **Eşya etkileri:** Mama +3 can (savaş & dünya) · Güç Maması savaşta 2 tur +3 güç · Hız Botları 3 YP → kalıcı hız (BOOT_MULT)
+- **Savaşta "Geri" butonu** (tur harcamaz); can & mama artık kalıcı; YP savaş kazanınca dolar
+- **Dükkan:** ilk girişte 100 RD hediye; **Çıkış** → parkta ilk seferde envanter/YP tanıtımı
+- Gizli test kodu: ana menüde enkisoft'a 10 tık → bölüm seç
+- Spec: `docs/superpowers/specs/2026-07-04-oyuncu-ilerleme-envanter-design.md`, plan: `docs/superpowers/plans/2026-07-04-oyuncu-ilerleme-envanter.md`
+
 ### ⏭️ Sıradaki
-- **Dükkan içi sahne** (eşya alma vb.) — "Devamı yakında" oradan devam edecek
+- Botun "ilerde başka güç" eklentileri; güç maması için Chapter 2 savaşı
 - Park içine ek karakterler/etkileşimler; ses efektleri
 - İstersek: JS paketi büyük (~1.2 MB) → ileride code-splitting (aciliyet yok)
 

@@ -6,7 +6,7 @@ import { drawMama, drawBoots } from '../../ui/shopItems';
 import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
-import { fadeIn } from '../../ui/transition';
+import { fadeIn, changeScene } from '../../ui/transition';
 import { browserStorage } from '../../data/save';
 import { GameState, loadState, saveState, buy, canBuy } from '../../state/gameState';
 
@@ -97,6 +97,11 @@ export class ShopScene extends Phaser.Scene {
     drawCharacter(this, 290, 476, 'random', 0.95, false).setDepth(510);
 
     addPauseButton(this, SceneKeys.Chapter2_Shop);
+
+    const exit = this.add.text(this.scale.width - 70, 30, '← Çıkış', {
+      fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', stroke: '#201a2a', strokeThickness: 3,
+    }).setOrigin(0.5).setDepth(600).setInteractive({ useHandCursor: true });
+    exit.on('pointerup', () => changeScene(this, SceneKeys.Chapter2_Park));
 
     // Dükkancının karşılaması (100 RD hediye) — bir dokunuşla kapanır
     const bubble = showSpeechBubble(

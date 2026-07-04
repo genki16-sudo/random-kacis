@@ -7,6 +7,8 @@ import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
 import { addGradientBg, addFloor } from '../../ui/scenery';
 import { fadeIn, changeScene } from '../../ui/transition';
+import { browserStorage } from '../../data/save';
+import { loadState, saveState } from '../../state/gameState';
 
 const WORLD_W = 1800;
 const SHOP_X = 1560;
@@ -51,6 +53,33 @@ export class ParkScene extends Phaser.Scene {
 
     this.addEnvButton();
     this.input.keyboard?.on('keydown-ESC', () => this.openInventory());
+
+    const st = loadState(browserStorage());
+    if (!st.tutorialDone) this.runTutorial();
+  }
+
+  private runTutorial(): void {
+    const beats = [
+      'Bir çantamız (envanter) var! Sağ alttaki ENV\'e ya da ESC\'ye dokun.',
+      'Orada canımızı ❤️, gücümüzü 💪 ve YP\'mizi ⚡ görürüz.',
+      'Eşyalar\'a bak — Hız Botları\'nı kullan! (YP\'n 5, botun gereksinimi 3)',
+      'Botu kullanınca YP 2/5 olur ve daha hızlı gezersin. Haydi dene!',
+    ];
+    let i = 0;
+    const heroX = this.world.hero.x, heroY = this.world.hero.y - 40;
+    let bubble = showSpeechBubble(this, heroX, heroY, beats[0], 300);
+    const advance = () => {
+      i += 1;
+      bubble.destroy();
+      if (i >= beats.length) {
+        const st = loadState(browserStorage());
+        saveState({ ...st, tutorialDone: true }, browserStorage());
+        this.input.off('pointerdown', advance);
+        return;
+      }
+      bubble = showSpeechBubble(this, this.world.hero.x, this.world.hero.y - 40, beats[i], 300);
+    };
+    this.input.on('pointerdown', advance);
   }
 
   private addEnvButton(): void {

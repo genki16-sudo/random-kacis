@@ -8,11 +8,13 @@ import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
 import { playChomp, playWhack, playApplause } from '../../audio/sfx';
 import { browserStorage, clearProgress } from '../../data/save';
-import { GameState, loadState, saveState, useMama as stateUseMama, HP_MAX } from '../../state/gameState';
+import {
+  GameState, loadState, saveState, useMama as stateUseMama, HP_MAX,
+  currentGuc, applyGucMamasi, tickGucBuff, refillYP,
+} from '../../state/gameState';
 
 const RANDOM_MAX = HP_MAX; // 10, aynı sabit — kaynak state/gameState.ts
 const BOSS_MAX = 15;
-const BITE_DMG = 3;
 const POLICE_DMG = 1;
 const MAMA_HEAL = 3;
 const BAR_W = 180;
@@ -188,7 +190,10 @@ export class BattleScene extends Phaser.Scene {
   private showItemList(): void {
     this.menu?.destroy();
     this.menu = undefined;
-    this.list = this.makeListItem(`Mama 🦴 ×${this.state.mama}`, () => this.useMama());
+    const W = this.scale.width;
+    const mamaItem = this.makeListItem(`Mama 🦴 ×${this.state.mama}`, () => this.useMama(), W / 2 - 120);
+    const gucItem = this.makeListItem(`Güç Maması 🔴 ×${this.state.gucMamasi}`, () => this.useGucMamasi(), W / 2 + 120);
+    this.list = this.add.container(0, 0, [mamaItem, gucItem]);
     if (!this.mamaCountExplained) {
       this.mamaCountExplained = true;
       this.setBubble(`Yanındaki sayı kaç adet olduğunu gösterir. ${this.state.mama} Mama'mız var!`);
@@ -223,13 +228,13 @@ export class BattleScene extends Phaser.Scene {
     this.backBtn = c;
   }
 
-  private makeListItem(label: string, onPick: () => void): Phaser.GameObjects.Container {
+  private makeListItem(label: string, onPick: () => void, x?: number): Phaser.GameObjects.Container {
     const W = this.scale.width;
     const bg = this.add.rectangle(0, 0, 220, 56, 0x3a2036).setStrokeStyle(3, 0xffe066);
     const txt = this.add.text(0, 0, label, {
       fontFamily: 'sans-serif', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5);
-    const item = this.add.container(W / 2, 468, [bg, txt]);
+    const item = this.add.container(x ?? W / 2, 468, [bg, txt]);
     item.setSize(220, 56);
     item.setInteractive({ useHandCursor: true });
     item.on('pointerover', () => bg.setFillStyle(0x50305a));
@@ -282,6 +287,34 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  private useGucMamasi(): void {
+    if (this.state.gucMamasi <= 0) { this.setBubble('Güç Maması yok!'); return; }
+    this.busy = true;
+    this.backBtn?.destroy();
+    this.backBtn = undefined;
+    this.list?.destroy();
+    this.list = undefined;
+    this.bubble?.destroy();
+    this.bubble = undefined;
+
+    this.state = applyGucMamasi(this.state);
+    saveState(this.state, browserStorage());
+    this.setBubble('Güç arttı! 2 tur boyunca ısırman daha güçlü! 💪');
+
+    const t = this.add.text(this.hero.x, this.hero.y - 80, 'GÜÇ +3', {
+      fontFamily: 'sans-serif', fontSize: '26px', color: '#ff9d5c', fontStyle: 'bold',
+      stroke: '#201a2a', strokeThickness: 4,
+    }).setOrigin(0.5);
+    this.tweens.add({ targets: t, y: t.y - 40, alpha: 0, duration: 1000, onComplete: () => t.destroy() });
+
+    this.time.delayedCall(1000, () => {
+      this.state = tickGucBuff(this.state);
+      saveState(this.state, browserStorage());
+      if (this.bossHp <= 0) { this.win(); return; }
+      this.policeTurn();
+    });
+  }
+
   private performBite(): void {
     this.busy = true;
     this.backBtn?.destroy();
@@ -308,7 +341,8 @@ export class BattleScene extends Phaser.Scene {
     // Boss sarsılır
     this.tweens.add({ targets: this.boss, x: this.boss.x + 8, duration: 50, yoyo: true, repeat: 3 });
 
-    this.bossHp = Math.max(0, this.bossHp - BITE_DMG);
+    const biteDmg = currentGuc(this.state);
+    this.bossHp = Math.max(0, this.bossHp - biteDmg);
     this.tweens.add({
       targets: this.bossHpFill,
       width: (BAR_W - 4) * (this.bossHp / BOSS_MAX),
@@ -316,7 +350,7 @@ export class BattleScene extends Phaser.Scene {
     });
     this.bossHpText.setText(`${this.bossHp}/${BOSS_MAX}`);
 
-    this.floatDamage(this.boss.x, this.boss.y - 70, BITE_DMG);
+    this.floatDamage(this.boss.x, this.boss.y - 70, biteDmg);
 
     this.time.delayedCall(450, () => {
       this.tweens.add({
@@ -325,6 +359,8 @@ export class BattleScene extends Phaser.Scene {
         duration: 420,
         ease: 'Quad.easeOut',
         onComplete: () => {
+          this.state = tickGucBuff(this.state);
+          saveState(this.state, browserStorage());
           if (this.bossHp <= 0) { this.win(); return; }
           this.policeTurn();
         },
@@ -423,7 +459,7 @@ export class BattleScene extends Phaser.Scene {
     if (this.over) return;
     this.over = true;
     this.busy = true;
-    this.state = { ...this.state, hp: this.randomHp };
+    this.state = refillYP({ ...this.state, hp: this.randomHp });
     saveState(this.state, browserStorage());
     clearProgress(browserStorage());
     const cx = this.scale.width / 2;

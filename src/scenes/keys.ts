@@ -11,6 +11,7 @@ export const SceneKeys = {
   Battle: 'Chapter1_Battle',
   Chapter2_Forest: 'Chapter2_Forest',
   Chapter2_Park: 'Chapter2_Park',
+  Chapter2_Shop: 'Chapter2_Shop',
 } as const;
 
 export type SceneKey = (typeof SceneKeys)[keyof typeof SceneKeys];

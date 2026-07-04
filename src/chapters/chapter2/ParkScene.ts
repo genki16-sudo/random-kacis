@@ -69,10 +69,7 @@ export class ParkScene extends Phaser.Scene {
         this.bubble?.destroy();
         this.world.march(SHOP_X, 360, () => {
           this.phase = 'done';
-          changeScene(this, SceneKeys.ChapterIntro, {
-            title: 'Devamı yakında…',
-            next: SceneKeys.Title,
-          });
+          changeScene(this, SceneKeys.Chapter2_Shop);
         });
       });
     }

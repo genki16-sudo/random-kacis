@@ -12,6 +12,7 @@ import { EscapeScene } from './chapters/chapter1/EscapeScene';
 import { BattleScene } from './chapters/chapter1/BattleScene';
 import { ForestScene } from './chapters/chapter2/ForestScene';
 import { ParkScene } from './chapters/chapter2/ParkScene';
+import { ShopScene } from './chapters/chapter2/ShopScene';
 
 const game = new Phaser.Game({
   ...gameConfig,
@@ -28,6 +29,7 @@ const game = new Phaser.Game({
     BattleScene,
     ForestScene,
     ParkScene,
+    ShopScene,
   ],
 });
 

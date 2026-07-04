@@ -5,6 +5,8 @@ import { drawCharacter } from '../../ui/drawCharacter';
 import { pushTrail, followerPositions, type Pt } from '../../logic/follow';
 import { depthScale } from '../../logic/depth';
 import { createDPad, type DPad } from '../../ui/dpad';
+import { loadState, BOOT_MULT } from '../../state/gameState';
+import { browserStorage } from '../../data/save';
 
 export interface OverworldOpts {
   worldWidth: number;
@@ -76,7 +78,9 @@ export class Overworld {
   }
 
   update(): void {
-    const { speed, worldWidth, yTop, yBottom } = this.opts;
+    const { worldWidth, yTop, yBottom } = this.opts;
+    const boot = loadState(browserStorage()).botKullanildi ? BOOT_MULT : 1;
+    const speed = this.opts.speed * boot;
     let vx: number;
     let vy: number;
 

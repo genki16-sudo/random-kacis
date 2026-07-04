@@ -3,7 +3,7 @@ import { SceneKeys } from './keys';
 import { browserStorage } from '../data/save';
 import {
   GameState, loadState, saveState, useMama, toggleBoots, canEquipBoots,
-  currentGuc, HP_MAX,
+  currentGuc, BOT_YP_COST,
 } from '../state/gameState';
 
 interface InvData { resumeKey: string; }
@@ -26,7 +26,7 @@ export class InventoryScene extends Phaser.Scene {
     this.add.rectangle(cx, this.scale.height/2, this.scale.width, this.scale.height, 0x05070d, 0.9).setInteractive();
     this.add.text(cx, 40, '🎒 Envanter', { fontFamily:'sans-serif', fontSize:'30px', color:'#ffe066', fontStyle:'bold' }).setOrigin(0.5);
 
-    this.info = this.add.text(cx, 96, '', { fontFamily:'sans-serif', fontSize:'20px', color:'#ffffff', align:'center' }).setOrigin(0.5);
+    this.info = this.add.text(cx, 90, '', { fontFamily:'sans-serif', fontSize:'20px', color:'#ffffff', align:'center' }).setOrigin(0.5);
     this.refreshInfo();
 
     this.add.text(cx, 150, 'Eşyalar (kullanmak için dokun)', { fontFamily:'sans-serif', fontSize:'16px', color:'#aaaaaa' }).setOrigin(0.5);
@@ -39,7 +39,10 @@ export class InventoryScene extends Phaser.Scene {
 
   private refreshInfo(): void {
     const s = this.state;
-    this.info.setText(`💰 ${s.rd} RD    ❤️ Can ${s.hp}/${HP_MAX}    ⚡ YP ${s.yp}/${s.ypMax}    💪 Güç ${currentGuc(s)}`);
+    this.info.setText(
+      `💰 ${s.rd} RD    ❤️ Can ${s.hp}/${s.hpMax}    ⚡ YP ${s.yp}/${s.ypMax}    💪 Güç ${currentGuc(s)}\n` +
+      `🏅 Seviye ${s.level}    ·    ⭐ TP ${s.tp}`
+    );
   }
 
   private buildRows(): void {
@@ -50,7 +53,7 @@ export class InventoryScene extends Phaser.Scene {
     const defs = [
       { label: `🦴 Mama ×${s.mama}`, onUse: () => this.doUseMama() },
       { label: `🔴 Güç Maması ×${s.gucMamasi}`, onUse: () => this.flash('Bu eşya savaşta kullanılır') },
-      { label: `👢 Hız Botları ${s.botVar ? (s.botEquipped ? '(takılı)' : '(hazır)') : '(yok)'}`, onUse: () => this.doToggleBoots() },
+      { label: `👢 Hız Botları (${BOT_YP_COST} YP) ${s.botVar ? (s.botEquipped ? '· takılı' : '· hazır') : '· yok'}`, onUse: () => this.doToggleBoots() },
     ];
     defs.forEach((d, i) => {
       const c = this.makeButton(cx, 200 + i * 64, d.label, d.onUse);

@@ -18,6 +18,8 @@ export class PauseScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Sahne listesinde chapter sahnelerinden önce; üstte render edilsin
+    this.scene.bringToTop();
     const cx = this.scale.width / 2;
     const cy = this.scale.height / 2;
     this.add.rectangle(cx, cy, this.scale.width, this.scale.height, 0x000000, 0.6);

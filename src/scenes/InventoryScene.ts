@@ -19,6 +19,8 @@ export class InventoryScene extends Phaser.Scene {
   init(data: InvData): void { this.resumeKey = data.resumeKey; }
 
   create(): void {
+    // Sahne listesinde chapter sahnelerinden önce kayıtlı; üstte render edilsin
+    this.scene.bringToTop();
     const cx = this.scale.width / 2;
     this.state = loadState(browserStorage());
     this.add.rectangle(cx, this.scale.height/2, this.scale.width, this.scale.height, 0x05070d, 0.9).setInteractive();

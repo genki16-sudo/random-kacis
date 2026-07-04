@@ -72,6 +72,23 @@ export class ForestScene extends Phaser.Scene {
     );
 
     addPauseButton(this, SceneKeys.Chapter2_Forest);
+
+    this.addEnvButton();
+    this.input.keyboard?.on('keydown-ESC', () => this.openInventory());
+  }
+
+  private addEnvButton(): void {
+    const x = 150, y = this.scale.height - 78; // yön pedinin sağında
+    const bg = this.add.circle(x, y, 26, 0x000000, 0.45).setStrokeStyle(2, 0xffe066).setScrollFactor(0).setDepth(1000);
+    this.add.text(x, y, 'ENV', { fontFamily: 'sans-serif', fontSize: '15px', color: '#ffe066', fontStyle: 'bold' }).setOrigin(0.5).setScrollFactor(0).setDepth(1000);
+    bg.setInteractive({ useHandCursor: true });
+    bg.on('pointerup', () => this.openInventory());
+  }
+
+  private openInventory(): void {
+    if (this.scene.isActive(SceneKeys.Inventory)) return;
+    this.scene.pause();
+    this.scene.launch(SceneKeys.Inventory, { resumeKey: this.scene.key });
   }
 
   update(): void {

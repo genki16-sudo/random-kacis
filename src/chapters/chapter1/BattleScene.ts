@@ -8,13 +8,13 @@ import { showSpeechBubble } from '../../ui/speechBubble';
 import { addPauseButton } from '../../ui/pauseButton';
 import { playChomp, playWhack, playApplause } from '../../audio/sfx';
 import { browserStorage, clearProgress } from '../../data/save';
+import { GameState, loadState, saveState, useMama as stateUseMama, HP_MAX } from '../../state/gameState';
 
-const RANDOM_MAX = 10;
+const RANDOM_MAX = HP_MAX; // 10, aynı sabit — kaynak state/gameState.ts
 const BOSS_MAX = 15;
 const BITE_DMG = 3;
 const POLICE_DMG = 1;
 const MAMA_HEAL = 3;
-const MAMA_START = 10;
 const BAR_W = 180;
 
 export class BattleScene extends Phaser.Scene {
@@ -25,7 +25,7 @@ export class BattleScene extends Phaser.Scene {
   private list?: Phaser.GameObjects.Container;
   private healTutorialShown = false;
   private itemsUnlocked = false;
-  private mamaCount = MAMA_START;
+  private state!: GameState;
   private mamaCountExplained = false;
   private bossHp = BOSS_MAX;
   private randomHp = RANDOM_MAX;
@@ -43,13 +43,13 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.state = loadState(browserStorage());
     this.bossHp = BOSS_MAX;
-    this.randomHp = RANDOM_MAX;
+    this.randomHp = this.state.hp;
     this.busy = false;
     this.over = false;
     this.healTutorialShown = false;
     this.itemsUnlocked = false;
-    this.mamaCount = MAMA_START;
     this.mamaCountExplained = false;
     this.bubble = undefined;
     this.menu = undefined;
@@ -186,10 +186,10 @@ export class BattleScene extends Phaser.Scene {
   private showItemList(): void {
     this.menu?.destroy();
     this.menu = undefined;
-    this.list = this.makeListItem(`Mama 🦴 ×${this.mamaCount}`, () => this.useMama());
+    this.list = this.makeListItem(`Mama 🦴 ×${this.state.mama}`, () => this.useMama());
     if (!this.mamaCountExplained) {
       this.mamaCountExplained = true;
-      this.setBubble(`Yanındaki sayı kaç adet olduğunu gösterir. ${this.mamaCount} Mama'mız var!`);
+      this.setBubble(`Yanındaki sayı kaç adet olduğunu gösterir. ${this.state.mama} Mama'mız var!`);
       // sonra seçimi sana bırakır
       this.time.delayedCall(2800, () => { this.bubble?.destroy(); this.bubble = undefined; });
     } else {
@@ -214,11 +214,10 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private useMama(): void {
-    if (this.mamaCount <= 0) {
+    if (this.state.mama <= 0) {
       this.setBubble('Mama bitti!');
       return;
     }
-    this.mamaCount -= 1;
     this.busy = true;
     this.list?.destroy();
     this.list = undefined;
@@ -226,7 +225,9 @@ export class BattleScene extends Phaser.Scene {
     this.bubble = undefined;
 
     const before = this.randomHp;
+    this.state = stateUseMama(this.state); // mama--, state.hp cap'li
     this.randomHp = Math.min(RANDOM_MAX, this.randomHp + MAMA_HEAL);
+    saveState(this.state, browserStorage());
     const gain = this.randomHp - before;
 
     this.tweens.add({
@@ -364,6 +365,8 @@ export class BattleScene extends Phaser.Scene {
 
   private afterRound(): void {
     if (this.randomHp <= 0) {
+      this.state = { ...this.state, hp: 0 };
+      saveState(this.state, browserStorage());
       changeScene(this, SceneKeys.GameOver, { retryKey: SceneKeys.Battle });
       return;
     }
@@ -391,6 +394,8 @@ export class BattleScene extends Phaser.Scene {
     if (this.over) return;
     this.over = true;
     this.busy = true;
+    this.state = { ...this.state, hp: this.randomHp };
+    saveState(this.state, browserStorage());
     clearProgress(browserStorage());
     const cx = this.scale.width / 2;
 

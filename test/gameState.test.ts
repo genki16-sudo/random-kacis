@@ -61,6 +61,13 @@ describe('bot equip/unequip', () => {
     expect(r.yp).toBe(5);
     expect(r.botEquipped).toBe(false);
   });
+  it('unequip does not let free YP exceed ypMax (migrated saves)', () => {
+    // eski kayıt göçü: equip bedeli ödenmemiş, yp zaten maks
+    const s = { ...newGameState(), botVar: true, yp: 5, ypMax: 5, botEquipped: true };
+    const r = unequipBoots(s);
+    expect(r.yp).toBe(5); // 5+3=8 değil, ypMax'a clamp
+    expect(r.botEquipped).toBe(false);
+  });
   it('toggle equips then unequips', () => {
     const s = { ...newGameState(), botVar: true, yp: 5 };
     const eq = toggleBoots(s);

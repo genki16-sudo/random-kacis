@@ -69,7 +69,8 @@ export function equipBoots(s: GameState): GameState {
 
 export function unequipBoots(s: GameState): GameState {
   if (!s.botEquipped) return s;
-  return { ...s, yp: s.yp + BOT_YP_COST, botEquipped: false };
+  // Göç edilen eski kayıtlar equip bedelini ödememiş olabilir; boş YP kapasiteyi aşmasın.
+  return { ...s, yp: Math.min(s.yp + BOT_YP_COST, s.ypMax), botEquipped: false };
 }
 
 export function toggleBoots(s: GameState): GameState {

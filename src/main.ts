@@ -3,6 +3,7 @@ import { gameConfig } from './config';
 import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { PauseScene } from './scenes/PauseScene';
+import { InventoryScene } from './scenes/InventoryScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { ChapterIntroScene } from './scenes/ChapterIntroScene';
 import { CutsceneScene } from './chapters/chapter1/CutsceneScene';
@@ -20,6 +21,7 @@ const game = new Phaser.Game({
     BootScene,
     TitleScene,
     PauseScene,
+    InventoryScene,
     GameOverScene,
     ChapterIntroScene,
     CutsceneScene,

@@ -2,6 +2,7 @@ export const SceneKeys = {
   Boot: 'Boot',
   Title: 'Title',
   Pause: 'Pause',
+  Inventory: 'Inventory',
   GameOver: 'GameOver',
   ChapterIntro: 'ChapterIntro',
   Cutscene: 'Chapter1_Cutscene',

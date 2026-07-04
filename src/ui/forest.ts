@@ -2,18 +2,32 @@ import Phaser from 'phaser';
 
 const OUTLINE = 0x201a2a;
 
+/** Çam/köknar ağacı: kahverengi gövde + üst üste 3 üçgen katman (tepede sivri). */
 export function drawTree(scene: Phaser.Scene, x: number, y: number, scale = 1): Phaser.GameObjects.Container {
   const g = scene.add.graphics();
   g.lineStyle(3, OUTLINE, 1);
+
+  // Gövde
   g.fillStyle(0x6b4a2b, 1);
-  g.fillRect(-9, -6, 18, 44);
-  g.strokeRect(-9, -6, 18, 44);
-  g.fillStyle(0x2f8f3a, 1);
-  g.fillCircle(0, -40, 34);
-  g.strokeCircle(0, -40, 34);
-  g.fillStyle(0x3fae4b, 1);
-  g.fillCircle(-16, -30, 20);
-  g.fillCircle(16, -30, 20);
+  g.fillRect(-7, 22, 14, 26);
+  g.strokeRect(-7, 22, 14, 26);
+
+  const dark = 0x2a733a;
+  const light = 0x3aa04c;
+
+  // Alt katman (en geniş)
+  g.fillStyle(dark, 1);
+  g.fillTriangle(-36, 28, 36, 28, 0, -6);
+  g.strokeTriangle(-36, 28, 36, 28, 0, -6);
+  // Orta katman
+  g.fillStyle(light, 1);
+  g.fillTriangle(-29, 6, 29, 6, 0, -30);
+  g.strokeTriangle(-29, 6, 29, 6, 0, -30);
+  // Üst katman (tepe)
+  g.fillStyle(dark, 1);
+  g.fillTriangle(-21, -16, 21, -16, 0, -54);
+  g.strokeTriangle(-21, -16, 21, -16, 0, -54);
+
   const c = scene.add.container(x, y, [g]);
   c.setScale(scale);
   return c;

@@ -6,6 +6,8 @@ import { addGradientBg, addFloor } from '../ui/scenery';
 import { fadeIn, changeScene } from '../ui/transition';
 
 export class TitleScene extends Phaser.Scene {
+  private secretClicks = 0;
+
   constructor() {
     super(SceneKeys.Title);
   }
@@ -41,9 +43,53 @@ export class TitleScene extends Phaser.Scene {
       cont.disableInteractive();
     }
 
-    this.add.text(this.scale.width - 12, this.scale.height - 10, 'enkisoft', {
+    const credit = this.add.text(this.scale.width - 12, this.scale.height - 10, 'enkisoft', {
       fontFamily: 'sans-serif', fontSize: '14px', color: '#8888aa',
     }).setOrigin(1, 1);
+
+    // Gizli test kodu: enkisoft'a 10 kez tıkla → bölüm seç menüsü
+    this.secretClicks = 0;
+    credit.setInteractive({ useHandCursor: false });
+    credit.on('pointerup', () => {
+      this.secretClicks += 1;
+      if (this.secretClicks >= 10) {
+        this.secretClicks = 0;
+        this.showChapterSelect();
+      }
+    });
+  }
+
+  /** Gizli bölüm seçme menüsü (enkisoft'a 10 tık ile açılır). */
+  private showChapterSelect(): void {
+    const cx = this.scale.width / 2;
+    const layer = this.add.container(0, 0).setDepth(2000);
+
+    const veil = this.add
+      .rectangle(cx, this.scale.height / 2, this.scale.width, this.scale.height, 0x05070d, 0.92)
+      .setInteractive(); // arkadaki butonlara tık geçmesin
+    layer.add(veil);
+
+    layer.add(
+      this.add.text(cx, 56, '🔓 Bölüm Seç (gizli)', {
+        fontFamily: 'sans-serif', fontSize: '26px', color: '#ffe066', fontStyle: 'bold',
+      }).setOrigin(0.5),
+    );
+
+    const jumps: Array<[string, string]> = [
+      ['Ch1: Kaçış', SceneKeys.Cutscene],
+      ['Ch1: Halay', SceneKeys.Halay],
+      ['Ch1: Anahtar', SceneKeys.KeyGrab],
+      ['Ch1: Savaş', SceneKeys.Battle],
+      ['Ch2: Orman', SceneKeys.Chapter2_Forest],
+      ['Ch2: Park', SceneKeys.Chapter2_Park],
+    ];
+    jumps.forEach(([label, key], i) => {
+      const bx = cx + (i % 2 === 0 ? -130 : 130);
+      const by = 130 + Math.floor(i / 2) * 74;
+      layer.add(this.makeButton(bx, by, label, () => changeScene(this, key)));
+    });
+
+    layer.add(this.makeButton(cx, 130 + 3 * 74, 'Kapat', () => layer.destroy()));
   }
 
   private makeButton(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Container {

@@ -33,6 +33,7 @@ export class Overworld {
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd: Record<string, Phaser.Input.Keyboard.Key>;
   private marching: { x: number; y: number; done: () => void } | null = null;
+  private bootMult = 1;
 
   constructor(scene: Phaser.Scene, private opts: OverworldOpts) {
     this.followers = opts.followerIds.map((id) =>
@@ -46,6 +47,11 @@ export class Overworld {
 
     scene.cameras.main.setBounds(0, 0, opts.worldWidth, scene.scale.height);
     scene.cameras.main.startFollow(this.hero, true, 0.1, 0);
+
+    this.bootMult = loadState(browserStorage()).botKullanildi ? BOOT_MULT : 1;
+    scene.events.on('resume', () => {
+      this.bootMult = loadState(browserStorage()).botKullanildi ? BOOT_MULT : 1;
+    });
 
     this.applyDepth();
   }
@@ -79,8 +85,7 @@ export class Overworld {
 
   update(): void {
     const { worldWidth, yTop, yBottom } = this.opts;
-    const boot = loadState(browserStorage()).botKullanildi ? BOOT_MULT : 1;
-    const speed = this.opts.speed * boot;
+    const speed = this.opts.speed * this.bootMult;
     let vx: number;
     let vy: number;
 

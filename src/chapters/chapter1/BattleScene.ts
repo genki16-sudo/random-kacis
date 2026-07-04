@@ -259,6 +259,7 @@ export class BattleScene extends Phaser.Scene {
     const before = this.randomHp;
     this.state = stateUseMama(this.state); // mama--, state.hp cap'li
     this.randomHp = Math.min(RANDOM_MAX, this.randomHp + MAMA_HEAL);
+    this.state = { ...this.state, hp: this.randomHp };
     saveState(this.state, browserStorage());
     const gain = this.randomHp - before;
 
@@ -405,6 +406,8 @@ export class BattleScene extends Phaser.Scene {
     this.tweens.add({ targets: this.hero, x: this.heroHomeX - 14, duration: 60, yoyo: true, repeat: 2 });
 
     this.randomHp = Math.max(0, this.randomHp - POLICE_DMG);
+    this.state = { ...this.state, hp: this.randomHp };
+    saveState(this.state, browserStorage());
     this.tweens.add({
       targets: this.randomHpFill,
       width: (BAR_W - 4) * (this.randomHp / RANDOM_MAX),

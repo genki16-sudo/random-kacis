@@ -101,7 +101,7 @@ export class ShopScene extends Phaser.Scene {
     const exit = this.add.text(this.scale.width - 70, 30, '← Çıkış', {
       fontFamily: 'sans-serif', fontSize: '18px', color: '#ffffff', stroke: '#201a2a', strokeThickness: 3,
     }).setOrigin(0.5).setDepth(600).setInteractive({ useHandCursor: true });
-    exit.on('pointerup', () => changeScene(this, SceneKeys.Chapter2_Park));
+    exit.on('pointerup', () => changeScene(this, SceneKeys.Chapter2_Park, { fromShop: true }));
 
     // Dükkancının karşılaması (100 RD hediye) — bir dokunuşla kapanır
     const bubble = showSpeechBubble(

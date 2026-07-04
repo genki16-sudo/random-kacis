@@ -17,9 +17,14 @@ export class ParkScene extends Phaser.Scene {
   private world!: Overworld;
   private bubble?: Phaser.GameObjects.Container;
   private phase: 'walk' | 'toShop' | 'done' = 'walk';
+  private fromShop = false;
 
   constructor() {
     super(SceneKeys.Chapter2_Park);
+  }
+
+  init(data?: { fromShop?: boolean }): void {
+    this.fromShop = !!(data && data.fromShop);
   }
 
   create(): void {
@@ -55,7 +60,7 @@ export class ParkScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-ESC', () => this.openInventory());
 
     const st = loadState(browserStorage());
-    if (!st.tutorialDone) this.runTutorial();
+    if (this.fromShop && !st.tutorialDone) this.runTutorial();
   }
 
   private runTutorial(): void {
